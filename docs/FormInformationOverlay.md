@@ -43,9 +43,10 @@ High‑level user flow:
 
 Before working with the Form overlay, ensure:
 
-- Format overlay is enabled.
 - At least one attribute is defined.
 - Familiarity with core OCA concepts.
+
+Note: the Format overlay is no longer a prerequisite. It's complementary — if present (before or after Form Information is added), DateTime/Numeric placeholders that are still empty will pick up sensible defaults derived from format rules, but adding Form Information no longer requires Format to be added first.
 
 ---
 
@@ -67,9 +68,8 @@ File: `src/Overlays/Overlays.jsx`
 Key logic:
 
 ```jsx
-// Disabled reason composition (both Form Information and Range overlays)
+// Disabled reason composition (Range overlay; Form Information has no overlay-level prerequisite)
 const getDisabledReason = (featureName) => (
-  getFormInformationDisabledReason(featureName, selectedFeatures) ||
   getRangeOverlayDisabledReason(
     featureName,
     selectedFeatures,
@@ -81,7 +81,6 @@ const getDisabledReason = (featureName) => (
 
 // Gating selection
 if (shouldDisableRangeOverlay(item, selectedFeatures, attributeRowData, rangeRowData)) return;
-if (shouldDisableFormInformationOverlay(item, selectedFeatures)) return;
 
 // Navigation
 if (item === "Add Form Information") {
@@ -89,17 +88,17 @@ if (item === "Add Form Information") {
 }
 ```
 
-Prerequisite rules are defined in `src/constants/utils.js` (see below).
+Prerequisite rules are defined in `src/utils/helpers.js` (see below).
 
 ---
 
 ## Gating
 
-- Form overlay requires the Format overlay to be selected first.
+- Form Information has no Format-overlay prerequisite; it can be added as soon as at least one attribute exists.
 - Range overlay is available only when there’s a Numeric or DateTime attribute and the Format overlay is selected.
-- Tooltip texts come from `i18next` keys in `utils.js`.
+- Tooltip texts come from `i18next` keys in `helpers.js`.
 
-See `src/constants/utils.js` for the exact checks and messages.
+See `src/utils/helpers.js` for the exact checks and messages.
 
 ---
 
@@ -198,7 +197,7 @@ File: `src/App.js`
 Folder: `public/locales/`
 
 - Uses `i18next` and locale resources under `en/` and `fr/`.
-- Disabled reasons and tooltip strings are sourced via translation keys (e.g., the English UI string as key, such as `"Form Information requires 'Format' to be added first."`).
+- Disabled reasons and tooltip strings are sourced via translation keys (e.g., the English UI string as key, such as `"Range overlay requires 'Formats' to be added first."`).
 - The Form Information editor also respects global UI language for tab ordering.
 
 ---
@@ -223,6 +222,6 @@ Synchronization rules:
 
 - Label is required for each attribute in the primary language before moving to the builder.
 - Placeholders are cleared for `Binary` and `Boolean` attribute types and are not editable.
-- Disabled reasons are prioritized; Form Information/Range overlays will show specific guidance when prerequisites are unmet.
+- Disabled reasons are prioritized; the Range overlay will show specific guidance when its prerequisites are unmet (Form Information has none).
 
 

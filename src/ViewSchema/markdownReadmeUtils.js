@@ -498,6 +498,99 @@ export const generateAttributeFramingTable = (attributeFramingOverlay) => {
   return markdownContent.join("");
 };
 
+// Entry code framing is stored as one overlay per vocabulary (source), and each
+// overlay can frame the entry codes of any number of lists (attributes):
+//   entry_codes: { "<Attr>": { "<Code>": { description, framing_justification,
+//                                          predicate_id, term_id } } }
+// For readability the output is grouped by list instead: one
+// "### Entry code framing: <list>" section per list, and within it one
+// "#### <source>" block per vocabulary that frames that list (metadata,
+// imported vocabularies, and a table of the framed entry codes). The sources of
+// a list therefore always appear together, in the order they appear in the
+// overlay. Lists follow attributeNames order (the schema's attribute ordering)
+// when provided; any remaining lists follow in order of first appearance.
+// The overlay is accepted as an array of sources or as a single bare overlay
+// object.
+export const generateEntryCodeFramingTable = (
+  entryCodeFramingOverlay,
+  attributeNames = []
+) => {
+  const sources = Array.isArray(entryCodeFramingOverlay)
+    ? entryCodeFramingOverlay
+    : entryCodeFramingOverlay
+      ? [entryCodeFramingOverlay]
+      : [];
+
+  // Group by list: { "<Attr>": [{ framingMetadata, codes }] }
+  const sourcesByAttribute = new Map();
+  sources.forEach((source) => {
+    Object.entries(source?.entry_codes || {}).forEach(([attribute, codes]) => {
+      if (!codes || Object.keys(codes).length === 0) return;
+      if (!sourcesByAttribute.has(attribute)) sourcesByAttribute.set(attribute, []);
+      sourcesByAttribute.get(attribute).push({
+        framingMetadata: source?.framing_metadata || {},
+        codes
+      });
+    });
+  });
+
+  const orderedAttributes = [
+    ...attributeNames.filter((attribute) => sourcesByAttribute.has(attribute)),
+    ...[...sourcesByAttribute.keys()].filter(
+      (attribute) => !attributeNames.includes(attribute)
+    )
+  ];
+
+  const markdownContent = [];
+
+  orderedAttributes.forEach((attribute) => {
+    markdownContent.push(`### Entry code framing: ${attribute} \n\n`);
+
+    sourcesByAttribute.get(attribute).forEach(({ framingMetadata, codes }) => {
+      const { imports, ...metadata } = framingMetadata;
+      const sourceLabel = metadata.label || metadata.id || "";
+      markdownContent.push(`#### Source${sourceLabel ? `: ${sourceLabel}` : ""}\n\n`);
+
+      const metadataRows = Object.entries(metadata);
+      if (metadataRows.length > 0) {
+        markdownContent.push(generateTable(["Term", "Value"], metadataRows), "\n\n");
+      }
+
+      if (imports && typeof imports === "object" && Object.keys(imports).length > 0) {
+        markdownContent.push("##### Imported vocabularies\n\n");
+        const importRows = Object.entries(imports).map(([id, imp]) => [
+          id,
+          imp?.label || "",
+          imp?.location || "",
+          imp?.version || ""
+        ]);
+        markdownContent.push(
+          generateTable(["ID", "Label", "Location", "Version"], importRows),
+          "\n\n"
+        );
+      }
+
+      markdownContent.push("##### Entry code-specific framing\n\n");
+      const codeRows = Object.entries(codes).map(([entryCode, framing]) => [
+        entryCode,
+        framing?.predicate_id || "",
+        framing?.term_id || "",
+        framing?.description || "",
+        framing?.framing_justification || ""
+      ]);
+      markdownContent.push(
+        generateTable(
+          ["Entry code", "Predicate", "Term ID", "Description", "Framing Justification"],
+          codeRows
+        ),
+        "\n\n"
+      );
+    });
+  });
+
+  return markdownContent.join("");
+};
+
 // For ZIP schema bundle
 export const generateSAIDTable = (captureBaseSAID, layerToSAIDMap) => {
   const markdownContent = ["## Schema SAIDs\n\n"];

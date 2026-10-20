@@ -4,6 +4,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import { Box, Button, List, ListItemButton, ListItemText, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { CustomPalette } from "../constants/customPalette";
 import { Context } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
@@ -25,7 +26,8 @@ import {
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORMAT_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
-  FIELD_EXAMPLE_OVERLAY
+  FIELD_EXAMPLE_OVERLAY,
+  FIELD_ENTRY_CODE_FRAMING_OVERLAY
 } from "../constants/constants";
 import { deleteOverlayData, getListOfSelectedOverlays } from "../utils/overlayUtils";
 
@@ -42,8 +44,29 @@ const OVERLAY_TO_PAGE = {
   [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: "AttributeFraming",
   [FIELD_FORMAT_OVERLAY]: "FormatRules",
   [FIELD_DATA_SEPARATOR_OVERLAY]: "DataSeparator",
-  [FIELD_EXAMPLE_OVERLAY]: "ExampleOverlay"
+  [FIELD_EXAMPLE_OVERLAY]: "ExampleOverlay",
+  [FIELD_ENTRY_CODE_FRAMING_OVERLAY]: "Codes"
 };
+
+const hasEntryCodeFraming = (schemaState) => {
+  const framingSources = schemaState?.entryCodeFramingSources || {};
+  return (schemaState?.attributes || []).some(
+    (attr) => attr.List === true && (framingSources[attr.Attribute] || []).length > 0
+  );
+};
+
+// Lists entry code framing right after attribute framing.
+const withEntryCodeFraming = (selections, isAdded) =>
+  Object.fromEntries(
+    Object.entries(selections).flatMap(([key, value]) =>
+      key === FIELD_ATTRIBUTE_FRAMING_OVERLAY
+        ? [
+            [key, value],
+            [FIELD_ENTRY_CODE_FRAMING_OVERLAY, isAdded]
+          ]
+        : [[key, value]]
+    )
+  );
 
 const Overlays = ({ pageBack, pageForward }) => {
   const { t } = useTranslation();
@@ -67,7 +90,7 @@ const Overlays = ({ pageBack, pageForward }) => {
   const rangeRowData = getRangeData();
   const attributeRowData = schemaState?.attributes || []; // Full attribute objects with Type field
   const formatRuleData = getFormatRuleData();
-  const overlay = getOverlaySelections();
+  const overlay = withEntryCodeFraming(getOverlaySelections(), hasEntryCodeFraming(schemaState));
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedItemToDelete, setSelectedItemToDelete] = useState("");
@@ -78,6 +101,12 @@ const Overlays = ({ pageBack, pageForward }) => {
   const addToSelected = (overlayKey) => {
     if (isOverlayAddDisabled(overlayKey, selectedKeys, attributeRowData, rangeRowData, formatRuleData))
       return;
+
+    // Entry code framing is added from the Entry Codes page.
+    if (overlayKey === FIELD_ENTRY_CODE_FRAMING_OVERLAY) {
+      setCurrentPage(OVERLAY_TO_PAGE[overlayKey]);
+      return;
+    }
 
     // Get current overlay selections
     const currentSelections = getOverlaySelections();
@@ -192,9 +221,24 @@ const Overlays = ({ pageBack, pageForward }) => {
                       formatRuleData
                     )
                   : "";
-                
+
+                const showFormatBeforeFormTip =
+                  !isDisabled &&
+                  overlayKey === FIELD_FORM_INFORMATION_OVERLAY &&
+                  !selectedKeys.includes(FIELD_FORMAT_OVERLAY);
+                const tipText = showFormatBeforeFormTip
+                  ? t(
+                      "Tip: adding Format first lets DateTime and Numeric placeholders inherit sensible defaults automatically."
+                    )
+                  : "";
+
                 return (
-                  <Tooltip key={overlayKey} title={isDisabled ? disabledReason : ""} placement="right" arrow>
+                  <Tooltip
+                    key={overlayKey}
+                    title={isDisabled ? disabledReason : tipText}
+                    placement="right"
+                    arrow
+                  >
                     <span>
                       <ListItemButton
                         onClick={() => addToSelected(overlayKey)}
@@ -204,6 +248,9 @@ const Overlays = ({ pageBack, pageForward }) => {
                         <ListItemText primary={t(displayName)} sx={{ marginLeft: 2 }} />
                         {isDisabled && (
                           <HelpOutlineIcon sx={{ fontSize: 18, marginLeft: "6px", color: "#6b7280" }} />
+                        )}
+                        {showFormatBeforeFormTip && (
+                          <InfoOutlinedIcon sx={{ fontSize: 18, marginLeft: "6px", color: "#9ca3af" }} />
                         )}
                       </ListItemButton>
                     </span>

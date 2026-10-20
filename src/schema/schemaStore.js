@@ -101,6 +101,10 @@ export const createDefaultSchemaState = () => ({
   // sources, each { key, metadata: {id, label, location, version, imports?}, rows }.
   // Supports framing the same attributes against multiple vocabularies at once.
   attributeFramingSources: [],
+  // Entry Code Framing overlay (ADC extension) - keyed by list attribute name,
+  // each value an array of framing sources { key, metadata, rows } where rows
+  // are { Code, objectId, description, predicateId, mappingJustification }.
+  entryCodeFramingSources: {},
   // Data Separator overlay (ADC extension) - per-schema
   decimalSeparator: ".",
   fileDelimiterData: {
@@ -491,6 +495,10 @@ export const makeSchemaStore = ({
 
       const entryCodes = currentState.entryCodes || {};
       updatedState.entryCodes = renameKeyInObjectByNorm(entryCodes, newAttributeValue);
+      updatedState.entryCodeFramingSources = renameKeyInObjectByNorm(
+        currentState.entryCodeFramingSources || {},
+        newAttributeValue
+      );
 
       updatedState.attributesWithLists = renameInStringArray(
         currentState.attributesWithLists || []
