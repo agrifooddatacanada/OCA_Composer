@@ -22,12 +22,13 @@ const hasFramingData = (row) =>
 const defaultColDef = {
   width: 150,
   editable: false,
+  sortable: true,
   cellStyle: preWrapWordBreak
 };
 
 // Read-only, per-source view of the data collected on the Attribute Framing
 // overlay page (see src/Overlays/AttributeFraming.jsx), rendered directly
-// below the Schema Details table on the View Schema page. Since users can
+// below the Attribute Details table on the View Schema page. Since users can
 // define more than one framing source (e.g. FOODON and ENVO), sources with
 // data are shown as tabs, mirroring the tab pattern used on the overlay page.
 export default function AttributeFramingTable({ sources = [] }) {

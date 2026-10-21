@@ -13,7 +13,8 @@ import {
   ENTRY_CODE_DRAG_WIDTH,
   ENTRY_CODE_CODE_WIDTH,
   ENTRY_CODE_LANG_WIDTH,
-  ENTRY_CODE_DELETE_WIDTH
+  ENTRY_CODE_DELETE_WIDTH,
+  ROW_NUMBER_COLUMN_WIDTH
 } from "../constants/constants";
 import {
   agGridEditableCellHoverCss,
@@ -118,6 +119,7 @@ export default function CodeGrid({
 
   const minTablePx = useMemo(
     () =>
+      ROW_NUMBER_COLUMN_WIDTH +
       ENTRY_CODE_DRAG_WIDTH +
       ENTRY_CODE_CODE_WIDTH +
       langSpecs.length * ENTRY_CODE_LANG_WIDTH +
@@ -235,6 +237,18 @@ export default function CodeGrid({
       width: ENTRY_CODE_LANG_WIDTH
     }));
     return [
+      {
+        field: "__rowNumber",
+        headerName: "#",
+        width: ROW_NUMBER_COLUMN_WIDTH,
+        pinned: "left",
+        lockPinned: true,
+        resizable: false,
+        sortable: false,
+        editable: false,
+        valueGetter: (params) => (params.node?.rowIndex ?? -1) + 1,
+        cellStyle: () => flexCenter
+      },
       {
         field: "Drag",
         headerName: "",

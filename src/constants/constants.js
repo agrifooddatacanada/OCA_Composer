@@ -10,6 +10,7 @@ export const MAX_QUESTION_DESCRIPTION_CHARS = 1000;
 export const FORM_BUILDER_CARD_WIDTH = 720;
 export const SECTION_SPACING = 2;
 export const TABLE_TO_BUTTON_GAP = 2; // theme units, gap between table and Add Attribute button
+export const ROW_NUMBER_COLUMN_WIDTH = 40; // shared by Attribute Details and Entry Codes row-number columns
 export const ENTRY_CODE_DRAG_WIDTH = 40;
 export const ENTRY_CODE_CODE_WIDTH = 200;
 export const ENTRY_CODE_LANG_WIDTH = 200;
