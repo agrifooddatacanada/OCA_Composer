@@ -25,10 +25,12 @@ import {
   AG_GRID_EMPTY_MAIN_STEP_BODY_MIN_PX,
   AG_GRID_EMPTY_MAIN_STEP_GRID_MIN_PX,
   AG_GRID_VIRTUALIZE_MIN_ROWS,
-  isUnitEligibleAttributeType
+  isUnitEligibleAttributeType,
+  ROW_NUMBER_COLUMN_WIDTH
 } from "../constants/constants";
 
-const ATTRIBUTE_GRID_COLUMN_SUM_PX = 40 + 150 + 125 + 128 + 150 + 100 + 44;
+const ATTRIBUTE_GRID_COLUMN_SUM_PX =
+  ROW_NUMBER_COLUMN_WIDTH + 40 + 150 + 125 + 128 + 150 + 100 + 44;
 
 // styles override the default cell style that limits height of input field. It looks ugly when word wrapping happens
 const gridStyle = `
@@ -276,6 +278,16 @@ export default function Grid({
 
   useEffect(() => {
     setColumnDefs([
+      {
+        field: "__rowNumber",
+        headerName: "#",
+        width: ROW_NUMBER_COLUMN_WIDTH,
+        resizable: false,
+        sortable: false,
+        editable: false,
+        valueGetter: (params) => (params.node?.rowIndex ?? -1) + 1,
+        cellStyle: () => flexCenter
+      },
       {
         field: "Drag",
         headerName: "",
