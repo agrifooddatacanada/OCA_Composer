@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AccordionDetails,
@@ -106,6 +106,34 @@ function ListFramingTable({ sources, columnDefs }) {
   const safeActiveIndex = activeIndex < sources.length ? activeIndex : 0;
   const activeSource = sources[safeActiveIndex];
 
+  const gridApiRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // Keep flex columns fitted to the container on mount and on real resizes.
+  const fitColumns = useCallback(() => {
+    const api = gridApiRef.current;
+    if (api && !api.isDestroyed?.()) {
+      api.sizeColumnsToFit();
+    }
+  }, []);
+
+  const handleGridReady = useCallback(
+    (params) => {
+      gridApiRef.current = params.api;
+      fitColumns();
+      requestAnimationFrame(fitColumns);
+    },
+    [fitColumns]
+  );
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(() => fitColumns());
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [fitColumns]);
+
   return (
     <Box sx={{ width: "100%" }}>
       {sources.length > 1 && (
@@ -116,6 +144,7 @@ function ListFramingTable({ sources, columnDefs }) {
         />
       )}
       <Box
+        ref={containerRef}
         className="ag-theme-balham"
         sx={{
           width: "100%",
@@ -126,7 +155,11 @@ function ListFramingTable({ sources, columnDefs }) {
       >
         <style>{gridStyles}</style>
         <AgGridReact
-          key={activeSource?.key}
+          // No `key` on purpose: one grid instance across tab switches keeps
+          // column widths and only swaps rows, so there is no visible resize.
+          onGridReady={handleGridReady}
+          onFirstDataRendered={fitColumns}
+          onGridSizeChanged={fitColumns}
           rowData={activeSource?.rows || []}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
@@ -177,7 +210,8 @@ export default function EntryCodeFramingTable({
     () => [
       {
         field: "Code",
-        width: 150,
+        flex: 1,
+        minWidth: 150,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -187,7 +221,8 @@ export default function EntryCodeFramingTable({
       },
       {
         field: "objectId",
-        width: 220,
+        flex: 1.5,
+        minWidth: 220,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -200,7 +235,8 @@ export default function EntryCodeFramingTable({
       },
       {
         field: "description",
-        width: 380,
+        flex: 3,
+        minWidth: 380,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -211,7 +247,8 @@ export default function EntryCodeFramingTable({
       },
       {
         field: "predicateId",
-        width: 190,
+        flex: 1.5,
+        minWidth: 190,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -224,7 +261,8 @@ export default function EntryCodeFramingTable({
       },
       {
         field: "mappingJustification",
-        width: 260,
+        flex: 2,
+        minWidth: 260,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -286,26 +324,20 @@ export default function EntryCodeFramingTable({
           </Box>
         </AccordionSummary>
         <AccordionDetails sx={{ textAlign: "start", padding: 0, paddingTop: 2 }}>
-          {lists.map(({ name, sources }) => (
-            <AccordionItemWrapper
-              key={name}
-              TransitionProps={ACCORDION_TRANSITION_PROPS}
-              defaultExpanded={lists.length === 1}
-              sx={{ marginTop: 1 }}
-            >
-              <AccordionSummary
-                expandIcon={
-                  <ExpandMoreIcon sx={{ color: CustomPalette.PRIMARY, fontSize: 30 }} />
-                }
-                aria-controls={`entry-code-framing-${name}-content`}
-                id={`entry-code-framing-${name}-header`}
+          {lists.map(({ name, sources }, index) => (
+            <Box key={name} sx={{ width: "100%", marginTop: index === 0 ? 0 : 3 }}>
+              <Typography
+                sx={{
+                  fontSize: "17px",
+                  fontWeight: "500",
+                  textAlign: "left",
+                  marginBottom: `${HEADER_TO_CONTENT_GAP_PX}px`
+                }}
               >
-                <Typography sx={{ fontSize: "17px", fontWeight: "500" }}>{name}</Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: 0, paddingTop: 1 }}>
-                <ListFramingTable sources={sources} columnDefs={columnDefs} />
-              </AccordionDetails>
-            </AccordionItemWrapper>
+                {name}
+              </Typography>
+              <ListFramingTable sources={sources} columnDefs={columnDefs} />
+            </Box>
           ))}
         </AccordionDetails>
       </AccordionItemWrapper>
