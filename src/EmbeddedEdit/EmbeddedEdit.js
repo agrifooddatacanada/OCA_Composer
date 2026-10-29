@@ -15,7 +15,8 @@ import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
  * the same multi-schema editor state a native upload on /start would, then
  * jumps straight to the wizard (skipping the upload step).
  *
- * The apply-back message (SCHEMA_SAVED) comes in a follow-up commit.
+ * The apply-back message (SCHEMA_SAVED) is sent by EmbeddedSaveBridge,
+ * which stays mounted regardless of wizard step.
  */
 const EmbeddedEdit = () => {
   const navigate = useNavigate();
