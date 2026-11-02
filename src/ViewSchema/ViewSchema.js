@@ -38,7 +38,8 @@ import {
   BETWEEN_SECTION_SPACING,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   isRangeEligibleAttributeType,
-  isUnitEligibleAttributeType
+  isUnitEligibleAttributeType,
+  dataTypes
 } from "../constants/constants";
 import { searchUnits } from "../utils/helpers";
 import { validateExampleValuesAgainstOverlays } from "../utils/exampleValidation";
@@ -241,6 +242,21 @@ export default function ViewSchema({
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [displayArray, setDisplayArray] = useState([]);
   const { exportData, error: exportError, clearError, resetToDefaults } = useOCAExport();
+
+  // Attribute count by exact Type string, shown as an "Attributes" field in
+  // SchemaDescription (Schema Metadata section). Ordered by the canonical
+  // dataTypes list so the breakdown reads in a stable order, not insertion order.
+  const attributeTypeCounts = useMemo(() => {
+    const counts = new Map();
+    displayArray.forEach((attr) => {
+      const type = attr?.Type;
+      if (!type) return;
+      counts.set(type, (counts.get(type) || 0) + 1);
+    });
+    return dataTypes
+      .filter((type) => counts.has(type))
+      .map((type) => ({ type, count: counts.get(type) }));
+  }, [displayArray]);
 
   // Package representation built from current editor state — kept early so
   // helper functions (display name lookup, package-level validation) can use it.
@@ -975,7 +991,11 @@ export default function ViewSchema({
                 </Tooltip>
               </Box>
             </Box>
-            <SchemaDescription currentLanguage={getCurrentLanguage()} />
+            <SchemaDescription
+              currentLanguage={getCurrentLanguage()}
+              attributeCount={displayArray.length}
+              attributeTypeCounts={attributeTypeCounts}
+            />
 
             {/* Multi-Schema Visualization */}
             {hasHierarchy && (
@@ -1129,19 +1149,8 @@ export default function ViewSchema({
               color: primaryColor
             }}
           >
-            {t("Schema Details")}
+            {t("Attribute Details")}
           </Typography>
-          <Box sx={{ marginLeft: "1rem", color: CustomPalette.GREY_600, display: "flex", alignItems: "center" }}>
-            <Tooltip
-              title={t(
-                "Attributes and all details relevant to them"
-              )}
-              placement="right"
-              arrow
-            >
-              <HelpOutlineIcon sx={{ fontSize: 15 }} />
-            </Tooltip>
-          </Box>
         </Box>
         {exampleValueIssues.length > 0 && (
           <Alert

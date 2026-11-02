@@ -39,6 +39,7 @@ const ACCORDION_TRANSITION_PROPS = { unmountOnExit: true, timeout: 0 };
 const defaultColDef = {
   width: 150,
   editable: false,
+  sortable: true,
   cellStyle: preWrapWordBreak
 };
 
