@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -50,11 +50,43 @@ export default function AttributeFramingTable({ sources = [] }) {
   const safeActiveIndex = activeIndex < sourcesWithData.length ? activeIndex : 0;
   const activeSource = sourcesWithData[safeActiveIndex];
 
+  const gridApiRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // Flex columns are sized by ag-grid from the measured container width. When
+  // the grid is re-created on a tab switch that measurement can be stale, so
+  // explicitly re-fit columns on grid ready / data render and whenever the
+  // container is resized.
+  const fitColumns = useCallback(() => {
+    const api = gridApiRef.current;
+    if (api && !api.isDestroyed?.()) {
+      api.sizeColumnsToFit();
+    }
+  }, []);
+
+  const handleGridReady = useCallback(
+    (params) => {
+      gridApiRef.current = params.api;
+      fitColumns();
+      requestAnimationFrame(fitColumns);
+    },
+    [fitColumns]
+  );
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(() => fitColumns());
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [fitColumns, sourcesWithData.length]);
+
   const columnDefs = useMemo(
     () => [
       {
         field: "Attribute",
-        width: 150,
+        flex: 1,
+        minWidth: 150,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -64,7 +96,8 @@ export default function AttributeFramingTable({ sources = [] }) {
       },
       {
         field: "objectId",
-        width: 220,
+        flex: 1.5,
+        minWidth: 220,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -77,7 +110,8 @@ export default function AttributeFramingTable({ sources = [] }) {
       },
       {
         field: "description",
-        width: 380,
+        flex: 3,
+        minWidth: 380,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -88,7 +122,8 @@ export default function AttributeFramingTable({ sources = [] }) {
       },
       {
         field: "predicateId",
-        width: 190,
+        flex: 1.5,
+        minWidth: 190,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -101,7 +136,8 @@ export default function AttributeFramingTable({ sources = [] }) {
       },
       {
         field: "mappingJustification",
-        width: 260,
+        flex: 2,
+        minWidth: 260,
         autoHeight: true,
         cellStyle: preWrapWordBreak,
         headerComponent: CellHeader,
@@ -212,6 +248,7 @@ export default function AttributeFramingTable({ sources = [] }) {
       )}
 
       <Box
+        ref={containerRef}
         className="ag-theme-balham"
         sx={{
           width: "100%",
@@ -222,7 +259,12 @@ export default function AttributeFramingTable({ sources = [] }) {
       >
         <style>{gridStyles}</style>
         <AgGridReact
-          key={activeSource?.key}
+          // No `key` on purpose: keeping one grid instance across tab switches
+          // means column widths are preserved and only the rows are swapped, so
+          // there is no re-mount and no visible resize.
+          onGridReady={handleGridReady}
+          onFirstDataRendered={fitColumns}
+          onGridSizeChanged={fitColumns}
           rowData={activeSource?.rows || []}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
