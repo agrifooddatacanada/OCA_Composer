@@ -65,6 +65,7 @@ export default function Footer() {
                   href={logo.website}
                   target="_blank"
                   rel="noopener noreferrer"
+                  style={logo.marginBottomPx ? { marginBottom: logo.marginBottomPx } : undefined}
                 >
                   <img src={logo.url} style={logo.style} alt={logo.alt} />
                 </a>
