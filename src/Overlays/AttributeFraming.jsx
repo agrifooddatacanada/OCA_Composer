@@ -38,6 +38,12 @@ import {
 
 const FRAMING_DROPDOWN_CELL_CLASS = "framing-dropdown-cell";
 
+// Exact sum of the column widths below - matches the fixed-width grid pattern
+// used by every other overlay grid (Cardinality, Range, Format Rule): a
+// stretched width:100% wrapper left empty space on the right since the
+// columns never actually filled it.
+const ATTRIBUTE_FRAMING_COL_SUM_PX = 150 + 190 + 220 + 380 + 260 + 70;
+
 // autoHeight wraps the renderer in shrink-to-fit wrappers; stretch them so the
 // Select (and its arrow) spans the full cell width.
 const framingDropdownCellCss = `
@@ -437,13 +443,10 @@ const AttributeFraming = forwardRef((_props, ref) => {
           />
 
           <Box
-            className="ag-theme-balham"
+            className="attribute-framing-overlay-grid overlay-grid-suppress-hscroll ag-theme-balham ag-grid-compact"
             sx={{
-              width: "100%",
-              minWidth: "1230px",
-              overflowX: "auto",
-              border: "1px solid #ddd",
-              borderRadius: "4px"
+              width: ATTRIBUTE_FRAMING_COL_SUM_PX,
+              boxSizing: "border-box"
             }}
           >
             <style>{gridStyles}</style>
@@ -456,7 +459,7 @@ const AttributeFraming = forwardRef((_props, ref) => {
               domLayout="autoHeight"
               suppressRowHoverHighlight
               stopEditingWhenCellsLoseFocus
-              suppressHorizontalScroll={false}
+              suppressHorizontalScroll
               onGridReady={onGridReady}
               overlayNoRowsTemplate={`<span class="ag-overlay-no-rows-center">${t("No Rows to Show")}</span>`}
             />
