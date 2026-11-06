@@ -895,7 +895,7 @@ const useOCAExport = () => {
     }
   };
 
-  const exportImportedPackage = async () => {
+  const exportImportedPackage = async ({ download = true } = {}) => {
     const saidByReferenceToken = {};
     const originalRootId = getPackageBundleId(ocaPackage);
 
@@ -1004,22 +1004,24 @@ const useOCAExport = () => {
       : null;
     const schemaName = engMeta?.name || getPackageBundleId(rootBundleData) || "schema";
 
-    const packageFileName = `${schemaName.split(" ")[0]}_OCA_package.json`;
-    downloadJsonFile(exportPackage, packageFileName);
+    if (download) {
+      const packageFileName = `${schemaName.split(" ")[0]}_OCA_package.json`;
+      downloadJsonFile(exportPackage, packageFileName);
 
-    if (rootBundleData?.overlays?.meta) {
-      await jsonToTextFile(rootBundleData, exportPackage);
+      if (rootBundleData?.overlays?.meta) {
+        await jsonToTextFile(rootBundleData, exportPackage);
+      }
+
+      if (currentEnv === "DEV" && rootBundleData) {
+        const bundleFileName = `${schemaName.split(" ")[0]}_OCA_bundle.json`;
+        downloadJsonFile(rootBundleData, bundleFileName);
+      }
     }
 
-    if (currentEnv === "DEV" && rootBundleData) {
-      const bundleFileName = `${schemaName.split(" ")[0]}_OCA_bundle.json`;
-      downloadJsonFile(rootBundleData, bundleFileName);
-    }
-
-    return true;
+    return exportPackage;
   };
 
-  const exportManualPackage = async () => {
+  const exportManualPackage = async ({ download = true } = {}) => {
     const pkgFromState = rebuildOcaPackageFromEditorState(ocaPackage);
     const rootSchemaId = getPackageBundleId(pkgFromState) || currentSchemaId;
 
@@ -1117,46 +1119,48 @@ const useOCAExport = () => {
       dependencies: finalPackage.dependencies
     });
 
-    try {
-      if (finalPackage.bundle?.capture_base) {
-        await jsonToTextFile(finalPackage.bundle, exportedPackageJson);
+    if (download) {
+      try {
+        if (finalPackage.bundle?.capture_base) {
+          await jsonToTextFile(finalPackage.bundle, exportedPackageJson);
+        }
+      } catch (readmeError) {
+        console.warn("Could not generate README:", readmeError);
       }
-    } catch (readmeError) {
-      console.warn("Could not generate README:", readmeError);
-    }
 
-    const rootState = getSchemaById(rootSchemaId);
-    const schemaNameForFile =
-      rootState?.metadata?.name || rootState?.metadata?.localized?.eng?.name || null;
+      const rootState = getSchemaById(rootSchemaId);
+      const schemaNameForFile =
+        rootState?.metadata?.name || rootState?.metadata?.localized?.eng?.name || null;
 
-    downloadJsonFile(
-      exportedPackageJson,
-      getDescriptiveFileName(schemaNameForFile, "OCA_package.json")
-    );
-
-    if (currentEnv === "DEV") {
-      downloadTextFile(
-        textDSL,
-        getDescriptiveFileName(schemaNameForFile, "OCA_file.txt")
-      );
       downloadJsonFile(
-        finalPackage,
-        getDescriptiveFileName(schemaNameForFile, "OCA_bundle.json")
+        exportedPackageJson,
+        getDescriptiveFileName(schemaNameForFile, "OCA_package.json")
       );
+
+      if (currentEnv === "DEV") {
+        downloadTextFile(
+          textDSL,
+          getDescriptiveFileName(schemaNameForFile, "OCA_file.txt")
+        );
+        downloadJsonFile(
+          finalPackage,
+          getDescriptiveFileName(schemaNameForFile, "OCA_bundle.json")
+        );
+      }
     }
 
-    return true;
+    return exportedPackageJson;
   };
 
   // MAIN EXPORT FUNCTION
-  const exportData = async () => {
+  const exportData = async ({ download = true } = {}) => {
     try {
       setError("");
       let result;
       if (ocaPackage) {
-        result = await exportImportedPackage();
+        result = await exportImportedPackage({ download });
       } else {
-        result = await exportManualPackage();
+        result = await exportManualPackage({ download });
       }
       if (result) clearDraft();
       return result;

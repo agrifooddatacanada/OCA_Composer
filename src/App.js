@@ -10,6 +10,7 @@ import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
 import EmbeddedEdit from "./EmbeddedEdit/EmbeddedEdit";
+import EmbeddedSaveBridge from "./EmbeddedEdit/EmbeddedSaveBridge";
 import { MultiSchemaProvider } from "./schema/schemaContext";
 import SessionDraftManager from "./components/SessionDraftManager";
 import SchemaUploadWarningPopup from "./SchemaTranslator/SchemaUploadWarningPopup";
@@ -292,6 +293,7 @@ function App() {
             >
               <BrowserRouter>
                 <SessionDraftManager />
+                <EmbeddedSaveBridge />
                 <SchemaUploadWarningPopup />
                 <Routes>
                   <Route path="/" element={<Landing />} />
