@@ -1,4 +1,4 @@
-import { ALLOWED_BOOLEAN_VALUES } from "../../constants/constants";
+import { ALLOWED_BOOLEAN_VALUES } from "../constants/constants";
 
 /**
  * Parses a regex pattern string to extract the main pattern and its modifiers (flags).

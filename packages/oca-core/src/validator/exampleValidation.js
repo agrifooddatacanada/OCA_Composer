@@ -7,18 +7,15 @@
  */
 
 import { Duration } from "luxon";
-import {
-  isValidNumber,
-  parseDateString,
-  getFormatRuleDescription
-} from "./helpers";
-import { matchFormat } from "../OCADataValidator/utils/matchRules";
-import { getFormatPatternForDecimalSeparator } from "../OCADataValidator/utils/decimalFormatPattern";
+import { isValidNumber, parseDateString } from "../utils/values";
+import { getFormatRuleDescription } from "../utils/formatRules";
+import { matchFormat } from "./matchRules";
+import { getFormatPatternForDecimalSeparator } from "./decimalFormatPattern";
 import {
   collectArrayDelimitersOutsideQuotes,
   formatDelimiterForMessage
-} from "../OCADataValidator/utils/arrayDelimiterOverlay";
-import { getMapValueForAttributeName } from "./stringUtils";
+} from "./arrayDelimiterOverlay";
+import { getMapValueForAttributeName } from "../utils/stringUtils";
 
 /**
  * Checks an example value against a range overlay's bounds.

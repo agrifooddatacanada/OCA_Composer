@@ -2,8 +2,12 @@
   "name": "uog-fe",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "@babel/runtime": "^7.28.4",
+    "@oca-composer/oca-core": "0.1.0",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@mui/icons-material": "^5.11.16",

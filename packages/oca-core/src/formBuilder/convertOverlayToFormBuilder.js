@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-unresolved -- uuid@13 "exports" not resolved by default import resolver
 import { v4 as uuidv4 } from "uuid";
-import { languageNameToAlpha3Codes } from "../../../constants/isoCodes";
-import { LanguageConstants } from "../../../utils/languageUtils";
+import { languageNameToAlpha3Codes } from "../constants/isoCodes";
+import { LanguageConstants } from "../utils/languageUtils";
 import {
   normalizeReferenceButtonTextMap,
   normalizeShowingAttribute

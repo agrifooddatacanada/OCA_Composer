@@ -11,7 +11,7 @@
  * CHILD SCHEMA STORAGE: oca_bundle.dependencies — each item is a full bundle.
  */
 
-import { langNameFromTwoLetters, langNameFromCodeOCA } from "./languageUtils";
+import { langNameFromTwoLetters, langNameFromCodeOCA } from "../utils/languageUtils";
 
 /**
  * Coerces only when the payload has legacy top-level `bundle` (+ optional `dependencies`) without `oca_bundle.bundle`.

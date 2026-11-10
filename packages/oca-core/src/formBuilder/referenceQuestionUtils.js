@@ -1,4 +1,4 @@
-import { isChildSchemaType } from "../../../constants/constants";
+import { isChildSchemaType } from "../constants/constants";
 
 const parseArrayTypeString = (type) => {
   if (typeof type !== "string") return "";

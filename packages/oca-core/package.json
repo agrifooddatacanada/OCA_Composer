@@ -1,0 +1,18 @@
+{
+  "name": "@oca-composer/oca-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Framework-free OCA schema logic shared by OCA Composer and its MCP server",
+  "license": "EUPL-1.2",
+  "main": "src/index.js",
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "fuse.js": "^7.1.0",
+    "jszip": "^3.10.1",
+    "luxon": "^3.6.1",
+    "oca_package": "^2.2.0",
+    "uuid": "^13.0.0"
+  }
+}

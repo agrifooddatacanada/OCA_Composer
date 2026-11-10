@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { replaceAttributeCharsInJsonString } from "./helpers";
+import { replaceAttributeCharsInJsonString } from "../utils/attributeNames";
 
 export async function parseOcaZipArrayBuffer(arrayBuffer) {
   const zip = await JSZip.loadAsync(arrayBuffer);

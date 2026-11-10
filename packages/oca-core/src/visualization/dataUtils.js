@@ -6,8 +6,8 @@ import {
   getPackageBundle,
   getPackageDependencies,
   coerceIfLegacyTopLevelBundle
-} from "../utils/packageUtils";
-import { normalizeEscapedQuotes } from "../utils/helpers";
+} from "../package/packageUtils";
+import { normalizeEscapedQuotes } from "../utils/escaping";
 
 /**
  * Universal truncation function for all text in the application

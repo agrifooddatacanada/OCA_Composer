@@ -1,11 +1,11 @@
 import { Duration } from "luxon";
-import OCADataSetErr from "./utils/Err";
-import { matchFormat, matchCharacterEncoding } from "./utils/matchRules";
+import OCADataSetErr from "./Err";
+import { matchFormat, matchCharacterEncoding } from "./matchRules";
 import { ADC, ALLOWED_BOOLEAN_VALUES, errorCode, RANGE } from "../constants/constants";
-import { isValidNumber, parseDateString } from "../utils/helpers";
-import { getRootCaptureBaseId } from "../utils/packageUtils";
-import { getFormatPatternForDecimalSeparator } from "./utils/decimalFormatPattern";
-import { getArrayDelimiterMismatchMessage } from "./utils/arrayDelimiterOverlay";
+import { isValidNumber, parseDateString } from "../utils/values";
+import { getRootCaptureBaseId } from "../package/packageUtils";
+import { getFormatPatternForDecimalSeparator } from "./decimalFormatPattern";
+import { getArrayDelimiterMismatchMessage } from "./arrayDelimiterOverlay";
 // The version number of the OCA Technical Specification which this script is
 // developed for. See https://oca.colossi.network/specification/
 const OCA_VERSION = "1.0";

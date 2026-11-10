@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { getSchemaDataById } from "../SchemaVisualization/dataUtils";
+import { getSchemaDataById } from "../visualization/dataUtils";
 import {
   FIELD_CHARACTER_ENCODING_OVERLAY,
   FIELD_CONFORMANCE_OVERLAY,
@@ -28,14 +28,16 @@ import {
   langNameFromCodeOCA,
   LanguageConstants,
   normalizeToOCACode
-} from "./languageUtils";
+} from "../utils/languageUtils";
 import {
   getPackageBundle,
   getPackageDependencies,
   getPackageBundleId
 } from "./packageUtils";
-import { searchUnits, normalizeEscapedQuotes, replaceCharsInKeys } from "./helpers";
-import convertOverlayToFormBuilder from "../Overlays/FormBuilder/utils/convertOverlayToFormBuilder";
+import { searchUnits } from "../utils/units";
+import { normalizeEscapedQuotes } from "../utils/escaping";
+import { replaceCharsInKeys } from "../utils/attributeNames";
+import convertOverlayToFormBuilder from "../formBuilder/convertOverlayToFormBuilder";
 
 /**
  * OCA Package Parser Utility
