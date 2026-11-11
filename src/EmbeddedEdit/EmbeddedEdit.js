@@ -67,7 +67,9 @@ const EmbeddedEdit = () => {
         switchToSchema(pkg.oca_bundle.bundle.d, pkg);
         setSummaryExportMode(false);
         setCurrentPage("View");
-        navigate("/start");
+        // Carry the iframe flag forward — Home's chrome-hiding reads it fresh on every page,
+        // and this navigation would otherwise silently drop out of embedded mode.
+        navigate(isIframe ? "/start?iframe=true" : "/start");
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("[EmbeddedEdit] failed to load schema:", err);
@@ -82,7 +84,8 @@ const EmbeddedEdit = () => {
       switchToSchema,
       setSummaryExportMode,
       setCurrentPage,
-      navigate
+      navigate,
+      isIframe
     ]
   );
 
