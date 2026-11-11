@@ -1,7 +1,9 @@
 import React, { useContext } from "react";
-import { Box, Tooltip, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import { Box, Button, Tooltip, Typography } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
 import { CustomPalette } from "../constants/customPalette";
 import CodeGrid from "./CodeGrid";
 import { Context } from "../App";
@@ -16,8 +18,11 @@ export default function SingleTable({
   onFirstDataRendered,
   entryCodeData,
   setEntryCodeData,
-  setWarningNextPage
+  setWarningNextPage,
+  onOpenFraming,
+  isFramed
 }) {
+  const { t } = useTranslation();
   const { setChosenEntryCodeIndex, setCurrentPage } = useContext(Context);
   const hasExistingCodes =
     Array.isArray(entryCodeData) &&
@@ -87,6 +92,26 @@ export default function SingleTable({
               }
             }}
           />
+        </Tooltip>
+        <Tooltip title={t("Frame these entry codes to terms from an ontology or controlled vocabulary.")}>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<HubOutlinedIcon />}
+            onClick={onOpenFraming}
+            sx={{
+              margin: "1rem 0 1rem 1rem",
+              textTransform: "none",
+              borderColor: isFramed ? CustomPalette.PRIMARY : CustomPalette.GREY_300,
+              color: isFramed ? CustomPalette.PRIMARY : CustomPalette.GREY_600,
+              "&:hover": {
+                borderColor: CustomPalette.PRIMARY,
+                color: CustomPalette.PRIMARY
+              }
+            }}
+          >
+            {isFramed ? t("Framed") : t("Framing")}
+          </Button>
         </Tooltip>
       </Box>
       <CodeGrid

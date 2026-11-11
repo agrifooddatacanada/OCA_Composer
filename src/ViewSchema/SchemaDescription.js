@@ -8,7 +8,7 @@ import { useMultiSchema } from "../schema/schemaContext";
 import { langCodeOCAFromName } from "../utils/languageUtils";
 import { parseClassificationCode } from "../constants/constants";
 
-export default function SchemaDescription({ currentLanguage }) {
+export default function SchemaDescription({ currentLanguage, attributeCount = 0, attributeTypeCounts = [] }) {
   const { t, i18n } = useTranslation();
   const { divisionGroup, currentTheme } = useContext(Context);
   const fontFamily = useFontFamily();
@@ -111,6 +111,31 @@ export default function SchemaDescription({ currentLanguage }) {
         }}
       >
         {classification}
+      </Box>
+      <Typography
+        sx={{
+          fontSize: 15,
+          fontWeight: "bold",
+          textAlign: "left",
+          margin: "1rem 0 0.5rem 0",
+          color: currentTheme?.secondaryColor ?? CustomPalette.BLACK,
+          fontFamily
+        }}
+      >
+        {t("Attributes")}
+      </Typography>
+      <Box
+        sx={{
+          textAlign: "left",
+          width: "30rem",
+          overflowY: "auto"
+        }}
+      >
+        {attributeCount === 1 ? t("1 attribute") : t("{{count}} attributes", { count: attributeCount })}
+        {attributeTypeCounts.length > 0 &&
+          ` (${attributeTypeCounts
+            .map(({ type, count }) => t("{{count}} {{type}}", { count, type: t(type) }))
+            .join(", ")})`}
       </Box>
     </Box>
   );

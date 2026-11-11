@@ -203,6 +203,7 @@ export const gridStyles = `
 .required-entries-grid.ag-theme-balham .ag-body-viewport,
 .cardinality-overlay-grid.ag-theme-balham .ag-body-viewport,
 .attribute-details-grid.ag-theme-balham .ag-body-viewport,
+.attribute-framing-overlay-grid.ag-theme-balham .ag-body-viewport,
 .lan-grid.ag-theme-balham .ag-body-viewport,
 .entry-code-upload-preview-grid.ag-theme-balham .ag-body-viewport {
   scrollbar-gutter: auto;

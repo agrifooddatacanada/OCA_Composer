@@ -9,6 +9,7 @@ import React, {
   useImperativeHandle
 } from "react";
 import {
+  Alert,
   Box,
   Divider,
   TextField,
@@ -41,6 +42,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import CellHeader from "../components/CellHeader";
 import { useDeleteOverlayHandler } from "../utils/overlayUtils";
 import { getAllGridRowData, useOverlayGridOnGridReady } from "./gridUtils";
+import { getCardinalityOverlayDisabledReason } from "../utils/helpers";
 import "../App.css";
 
 const CARDINALITY_COL_SUM_PX = 160 + 200 + 140;
@@ -93,6 +95,14 @@ const Cardinality = forwardRef((_, forwardedRef) => {
     schemaState?.attributeCardinality,
     schemaState?.lanAttributeRowData
   ]);
+
+  const disabledReason = useMemo(() => {
+    if (cardinalityData.length > 0) return "";
+    return getCardinalityOverlayDisabledReason(
+      FIELD_CARDINALITY_OVERLAY,
+      schemaState?.attributes || []
+    );
+  }, [cardinalityData, schemaState?.attributes]);
 
   const gridRef = useRef();
   const [loading, setLoading] = useState(true);
@@ -519,6 +529,7 @@ const Cardinality = forwardRef((_, forwardedRef) => {
           closeModal={() => setShowDeleteConfirmation(false)}
         />
       )}
+      {disabledReason && <Alert severity="info">{disabledReason}</Alert>}
       <Box
         sx={{
           margin: "2rem",

@@ -28,12 +28,9 @@ import {
 import TypeTooltip from "../AttributeDetails/TypeTooltip";
 import { FormatRuleTypeRenderer } from "./FormatRuleCellRender";
 import {
-  AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX,
-  AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX,
   AG_GRID_VIRTUALIZE_MIN_ROWS,
   BETWEEN_SECTION_SPACING,
   CUSTOM_FORMAT_RULE,
-  FIELD_RANGE_OVERLAY,
   isChildSchemaType,
   isRangeEligibleAttributeType,
   MAX_ATTR_DESCRIPTION_CHARS
@@ -58,7 +55,6 @@ const FormatRulesV2 = forwardRef((props, ref) => {
   // Use MultiSchema context with standard pattern
   const {
     getSchema,
-    updateOverlaySelection,
     setSelectedOverlay,
     getRangeData,
     setFormatRuleRowData,
@@ -158,11 +154,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
     });
 
     setRangeRowData(newRangeRowData);
-
-    if (newRangeRowData.length === 0) {
-      updateOverlaySelection(FIELD_RANGE_OVERLAY, false);
-    }
-  }, [rangeRowData, setFormatRuleRowData, setRangeRowData, updateOverlaySelection]);
+  }, [rangeRowData, setFormatRuleRowData, setRangeRowData]);
 
   const handleForward = useCallback(() => {
     handleSave();
@@ -365,6 +357,7 @@ const FormatRulesV2 = forwardRef((props, ref) => {
 
   const formatGridScrollViewport = gridRowData.length >= AG_GRID_VIRTUALIZE_MIN_ROWS;
   const noAttributes = (schemaState?.attributes || []).length === 0;
+  const noFormatEligibleAttributes = !noAttributes && gridRowData.length === 0;
 
   return (
     <BackNextSkeleton
@@ -397,11 +390,16 @@ const FormatRulesV2 = forwardRef((props, ref) => {
           flexDirection: "column"
         }}
       >
+        {noFormatEligibleAttributes && (
+          <Alert severity="info">
+            {t("Format rules cannot be applied to Child Schema attributes.")}
+          </Alert>
+        )}
         <Box
           className={`format-rule-v2-grid overlay-grid-suppress-hscroll ag-theme-balham${formatGridScrollViewport ? "" : " ag-grid-compact"}`}
           sx={{
             width: 790,
-            overflow: "hidden",
+            ...(formatGridScrollViewport || gridRowData.length > 0 ? { overflow: "hidden" } : {}),
             ...(formatGridScrollViewport
               ? {
                   height: "min(70vh, 560px)",
@@ -410,18 +408,19 @@ const FormatRulesV2 = forwardRef((props, ref) => {
                 }
               : {
                   "& .ag-root-wrapper": { height: "auto" },
-                  "& .ag-root-wrapper-body.ag-layout-auto-height": {
-                    alignItems: "flex-start"
-                  },
-                  "& .ag-layout-auto-height .ag-center-cols-clipper": { minHeight: 0 },
-                  "& .ag-layout-auto-height .ag-center-cols-container": { minHeight: 0 },
-                  "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
-                    flex: "0 0 auto",
-                    height: "auto",
-                    minHeight: noAttributes ? AG_GRID_EMPTY_NO_ATTRIBUTES_BODY_MIN_PX : 0
-                  },
-                  ...(noAttributes
-                    ? { minHeight: AG_GRID_EMPTY_NO_ATTRIBUTES_GRID_MIN_PX }
+                  ...(gridRowData.length > 0
+                    ? {
+                        "& .ag-root-wrapper-body.ag-layout-auto-height": {
+                          alignItems: "flex-start"
+                        },
+                        "& .ag-layout-auto-height .ag-center-cols-clipper": { minHeight: 0 },
+                        "& .ag-layout-auto-height .ag-center-cols-container": { minHeight: 0 },
+                        "& .ag-root.ag-layout-auto-height .ag-body-viewport": {
+                          flex: "0 0 auto",
+                          height: "auto",
+                          minHeight: 0
+                        }
+                      }
                     : {})
                 })
           }}

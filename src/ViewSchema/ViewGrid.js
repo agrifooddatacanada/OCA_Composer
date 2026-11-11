@@ -22,7 +22,6 @@ import {
   FIELD_FORMAT_OVERLAY,
   FIELD_CONFORMANCE_OVERLAY,
   FIELD_CARDINALITY_OVERLAY,
-  FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_FORM_INFORMATION_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
   FIELD_EXAMPLE_OVERLAY,
@@ -103,6 +102,7 @@ const viewGridStyles = `
 const defaultColDef = {
   width: 120,
   editable: false,
+  sortable: true,
   cellStyle: () => greyCellStyle
 };
 
@@ -179,7 +179,7 @@ export default function ViewGrid({
         {
           field: "Attribute",
           headerName: t("Attribute"),
-          width: 120,
+          width: 135,
           pinned: "left",
           lockPosition: "left",
           suppressMovable: true,
@@ -194,7 +194,7 @@ export default function ViewGrid({
         },
         {
           field: "Sensitive",
-          width: 98,
+          width: 135,
           headerComponent: CellHeader,
           headerComponentParams: {
             headerText: t("Sensitive"),
@@ -215,7 +215,7 @@ export default function ViewGrid({
         {
           field: "Unit",
           headerName: t("Unit"),
-          width: 90,
+          width: 105,
           wrapText: true,
           headerComponent: CellHeader,
           headerComponentParams: {
@@ -351,7 +351,7 @@ export default function ViewGrid({
           // Handle Required column
           predefinedColumns.push({
             field: "Required",
-            width: 120,
+            width: 135,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
@@ -365,7 +365,7 @@ export default function ViewGrid({
         } else if (overlayKey === FIELD_CHARACTER_ENCODING_OVERLAY) {
           predefinedColumns.push({
             field: FIELD_CHARACTER_ENCODING_OVERLAY,
-            width: 180,
+            width: 200,
             autoHeight: true,
             headerComponent: CellHeader,
             headerComponentParams: {
@@ -396,17 +396,6 @@ export default function ViewGrid({
             headerComponentParams: {
               headerText: t("Cardinality"),
               helpText: t("The cardinality that is applied to the attribute")
-            }
-          });
-        } else if (overlayKey === FIELD_ATTRIBUTE_FRAMING_OVERLAY) {
-          predefinedColumns.push({
-            field: FIELD_ATTRIBUTE_FRAMING_OVERLAY,
-            width: 180,
-            autoHeight: true,
-            headerComponent: CellHeader,
-            headerComponentParams: {
-              headerText: t("Attribute Framing"),
-              helpText: t("The attribute framing that is applied to the attribute")
             }
           });
         } else if (overlayKey === FIELD_UNIT_FRAMING_OVERLAY) {
@@ -591,11 +580,10 @@ export default function ViewGrid({
           ? item.Examples[currentLanguage]
           : "";
 
-      // Get cardinality value from object
-      const cardinalityValue = getMapValueForAttributeName(
-        attributeCardinality,
-        item.Attribute
-      );
+      // Get cardinality value from object (only applies to Array[...] types)
+      const cardinalityValue = String(item.Type).includes("Array")
+        ? getMapValueForAttributeName(attributeCardinality, item.Attribute)
+        : "";
       if (cardinalityValue) {
         item.Cardinality = cardinalityValue;
       }

@@ -15,7 +15,5 @@ export const messages = {
   fileSizeLimit:
     "Please upload a file smaller than 1 MB. Only data headers in the first row are needed.",
   delimiterMismatchWarning: (expectedType, uploadedType) =>
-    `Schema delimiter expects ${expectedType}, but you uploaded ${uploadedType}. You can continue, but parsing or validation results may not match the schema as expected.`,
-  linkmlMissingEnumsWarning: (enumNames) =>
-    `This LinkML schema references enumeration types that are not included: ${enumNames.join(", ")}. Entry codes for the affected attributes will not be generated. Include the missing enum definitions from the parent schema.`
+    `Schema delimiter expects ${expectedType}, but you uploaded ${uploadedType}. You can continue, but parsing or validation results may not match the schema as expected.`
 };

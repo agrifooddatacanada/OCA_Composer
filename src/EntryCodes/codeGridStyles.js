@@ -16,6 +16,19 @@ export const codeGridStyle = `
   .entry-codes-grid.ag-theme-balham .ag-root-wrapper {
     border: none !important;
   }
+  /* AG Grid's own horizontal scroll is suppressed (see CodeGrid.js) in
+     favour of a native overflow-x on the grid's wrapper, so the
+     sticky-positioned pinned columns below need an unbroken chain of
+     visible overflow up to that wrapper - these ancestors default to
+     overflow:hidden, which would otherwise anchor stickiness to
+     themselves (same width as the content, so it would have no effect). */
+  .entry-codes-grid.ag-theme-balham .ag-root-wrapper,
+  .entry-codes-grid .ag-root.ag-layout-auto-height,
+  .entry-codes-grid .ag-body-clipper,
+  .entry-codes-grid .ag-body-viewport,
+  .entry-codes-grid .ag-header-viewport {
+    overflow: visible !important;
+  }
   .entry-codes-grid .ag-root-wrapper-body,
   .entry-codes-grid .ag-body,
   .entry-codes-grid .ag-body-clipper,
@@ -74,6 +87,24 @@ export const codeGridStyle = `
   .entry-codes-grid .ag-pinned-right-cols-container {
     border-left: none !important;
   }
+  /* The grid's own horizontal scroll is suppressed in favour of a native
+     overflow-x on its wrapper (see CodeGrid.js), so AG Grid's pinned-column
+     containers no longer stay fixed on their own; stick them to the
+     scrolling wrapper's edges instead so Drag/Delete stay reachable. */
+  .entry-codes-grid .ag-pinned-left-header,
+  .entry-codes-grid .ag-pinned-left-cols-container {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #fff;
+  }
+  .entry-codes-grid .ag-pinned-right-header,
+  .entry-codes-grid .ag-pinned-right-cols-container {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background-color: #fff;
+  }
   .entry-codes-grid .ag-pinned-right-header .ag-header-cell-resize::after {
     display: none !important;
   }
@@ -125,7 +156,7 @@ export const codeGridStyle = `
   .entry-codes-grid .ag-root-wrapper-body.ag-layout-auto-height {
     min-height: unset !important;
   }
-  .entry-codes-grid .ag-root-wrapper:has(.ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
+  .entry-codes-grid .ag-root-wrapper:has(.ag-overlay:not(.ag-hidden) .ag-overlay-no-rows-wrapper) .ag-root-wrapper-body {
     min-height: 88px !important;
   }
   .entry-codes-grid .ag-row .delete-icon-solid {
@@ -151,9 +182,6 @@ export const codeGridStyle = `
   }
   .entry-codes-grid .ag-cell .ag-drag-handle {
     margin-right: 0;
-  }
-  .entry-codes-grid-fixed-viewport.ag-theme-balham .ag-root-wrapper {
-    height: 100%;
   }
   .entry-codes-grid .ag-horizontal-left-spacer,
   .entry-codes-grid .ag-horizontal-right-spacer {

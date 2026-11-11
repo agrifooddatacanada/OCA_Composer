@@ -52,10 +52,11 @@ const UseASchemaWithDataAccordionItem = ({ isInvalidOcaPackage }) => {
     syncLandingSchemaDrop(setRawFile, setSchemaRawFile, acceptedFiles);
   };
 
-  const disableButtonCheck =
-    (rawFile.length === 0 && schemaRawFile.length === 0) ||
-    jsonLoading ||
-    startLoading;
+  // A schema is only usable once useHandleSchemaFileDrop actually finished
+  // parsing it successfully (jsonDropDisabled) — rawFile/schemaRawFile having
+  // entries merely means *something* was dropped, regardless of whether
+  // parsing failed.
+  const disableButtonCheck = !jsonDropDisabled;
   const disableAdditionalSchemaTools = disableButtonCheck || isInvalidOcaPackage;
 
   return (

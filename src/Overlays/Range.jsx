@@ -19,11 +19,11 @@ import { flexCenter, gridStyles, greyCellStyle, rangeOverlayViewportCss } from "
 import CheckboxHeader from "../components/CheckboxHeader";
 import Loading from "../components/Loading";
 import CheckboxRenderer from "../AttributeDetails/CheckboxRenderer";
-import { getCurrentData, getFormatRuleDescription } from "../utils/helpers";
+import { getCurrentData, getFormatRuleDescription, getRangeOverlayDisabledReason } from "../utils/helpers";
 import { getMapValueForAttributeName, normalizeAttributeNameKey } from "../utils/stringUtils";
 import { measureTextHeight } from "../utils/measureTextLines";
 import { matchFormat } from "../OCADataValidator/utils/matchRules";
-import { useDeleteOverlayHandler } from "../utils/overlayUtils";
+import { useDeleteOverlayHandler, getListOfSelectedOverlays } from "../utils/overlayUtils";
 import { getAllGridRowData, overlayGridOnFirstDataRendered, useOverlayGridOnGridReady } from "./gridUtils";
 
 const RANGE_FORMAT_ALERT_MS = 3000;
@@ -59,21 +59,37 @@ const Range = forwardRef((props, ref) => {
   } = useContext(Context);
   
   // Use MultiSchema context with standard pattern
-  const { 
-    getSchema, 
-    updateSchema, 
+  const {
+    getSchema,
+    updateSchema,
     getRangeData,
     setRangeRowData,
     schemaStates,
-    getCurrentSchemaId
+    getCurrentSchemaId,
+    getFormatRuleData,
+    getOverlaySelections
   } = useMultiSchema();
-  
+
   const schemaState = getSchema();
   const deleteHandler = useDeleteOverlayHandler(FIELD_RANGE_OVERLAY);
 
   const rangeRowData = useMemo(() => {
     return getRangeData() || [];
   }, [getRangeData, schemaStates, getCurrentSchemaId]);
+
+  const disabledReason = useMemo(() => {
+    if (rangeRowData.length > 0) return "";
+    const attributeRowData = schemaState?.attributes || [];
+    const formatRuleData = getFormatRuleData();
+    const { selectedKeys } = getListOfSelectedOverlays(getOverlaySelections());
+    return getRangeOverlayDisabledReason(
+      FIELD_RANGE_OVERLAY,
+      selectedKeys,
+      attributeRowData,
+      rangeRowData,
+      formatRuleData
+    );
+  }, [rangeRowData, schemaState?.attributes, getFormatRuleData, getOverlaySelections]);
   
   const { t, i18n } = useTranslation();
   const gridRef = useRef();
@@ -347,6 +363,7 @@ const Range = forwardRef((props, ref) => {
           proceeding.
         </Alert>
       )}
+      {disabledReason && <Alert severity="info">{disabledReason}</Alert>}
       <Box sx={{ my: "2rem", mb: BETWEEN_SECTION_SPACING }}>
         <Box
           className={`range-overlay-grid overlay-grid-suppress-hscroll ag-theme-balham${rangeGridFixedViewport ? "" : " ag-grid-compact"}`}

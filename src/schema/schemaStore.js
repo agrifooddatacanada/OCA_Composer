@@ -97,7 +97,14 @@ export const createDefaultSchemaState = () => ({
   attributeRanges: {}, // Object mapping attribute name to {lower, upper, lower_inclusive, upper_inclusive}
   unitData: [],
   unitFramedData: [],
-  attributeFramingData: [],
+  // Attribute Framing overlay (ADC extension) - array of independent framing
+  // sources, each { key, metadata: {id, label, location, version, imports?}, rows }.
+  // Supports framing the same attributes against multiple vocabularies at once.
+  attributeFramingSources: [],
+  // Entry Code Framing overlay (ADC extension) - keyed by list attribute name,
+  // each value an array of framing sources { key, metadata, rows } where rows
+  // are { Code, objectId, description, predicateId, mappingJustification }.
+  entryCodeFramingSources: {},
   // Data Separator overlay (ADC extension) - per-schema
   decimalSeparator: ".",
   fileDelimiterData: {
@@ -116,9 +123,7 @@ export const createDefaultSchemaState = () => ({
   exampleData: {},
   // Flags
   frameAllUnits: false,
-  frameAllAttributes: false,
   unframedUnitList: [],
-  unframedAttributeList: [],
   // Lifecycle flags
   /**
    * initialized: Marks schema as "ready for export/visualization"
@@ -490,6 +495,10 @@ export const makeSchemaStore = ({
 
       const entryCodes = currentState.entryCodes || {};
       updatedState.entryCodes = renameKeyInObjectByNorm(entryCodes, newAttributeValue);
+      updatedState.entryCodeFramingSources = renameKeyInObjectByNorm(
+        currentState.entryCodeFramingSources || {},
+        newAttributeValue
+      );
 
       updatedState.attributesWithLists = renameInStringArray(
         currentState.attributesWithLists || []
@@ -523,7 +532,12 @@ export const makeSchemaStore = ({
 
       updatedState.exampleData = renameOverlayMapKeys(currentState.exampleData || {});
       updatedState.unitFramedData = renameInArrayOfObjectsAttribute(currentState.unitFramedData);
-      updatedState.attributeFramingData = renameInArrayOfObjectsAttribute(currentState.attributeFramingData);
+      updatedState.attributeFramingSources = (
+        currentState.attributeFramingSources || []
+      ).map((source) => ({
+        ...source,
+        rows: renameInArrayOfObjectsAttribute(source.rows)
+      }));
       updatedState.dataStandardsData = renameInArrayOfObjectsAttribute(currentState.dataStandardsData);
       updatedState.FormInformationRowData = renameInArrayOfObjectsAttribute(
         currentState.FormInformationRowData || []
@@ -532,9 +546,6 @@ export const makeSchemaStore = ({
       updatedState.unitData = renameInStringArray(currentState.unitData || []);
       updatedState.unframedUnitList = renameInStringArray(
         currentState.unframedUnitList || []
-      );
-      updatedState.unframedAttributeList = renameInStringArray(
-        currentState.unframedAttributeList || []
       );
 
       updatedState.formPlaceholdersByLanguage = (() => {

@@ -135,6 +135,15 @@ const Home = ({ currentPage, setCurrentPage }) => {
       window.scrollTo(0, 0);
     }
   }, [location.pathname, location.state, setCurrentPage, navigate, setSummaryExportMode]);
+
+  // Cold load / reload of /start leaves currentPage at the App default ("Landing").
+  // Treat that as the Start step so the page is not just the stepper shell.
+  useEffect(() => {
+    if (location.pathname === "/start" && currentPage === "Landing") {
+      setCurrentPage("Start");
+    }
+  }, [location.pathname, currentPage, setCurrentPage]);
+
   const {
     currentSchemaId,
     schemaStates,

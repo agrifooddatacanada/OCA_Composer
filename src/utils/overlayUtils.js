@@ -16,7 +16,8 @@ import {
   FIELD_DATA_STANDARDS_OVERLAY,
   FIELD_ATTRIBUTE_FRAMING_OVERLAY,
   FIELD_DATA_SEPARATOR_OVERLAY,
-  FIELD_EXAMPLE_OVERLAY
+  FIELD_EXAMPLE_OVERLAY,
+  FIELD_ENTRY_CODE_FRAMING_OVERLAY
 } from "../constants/constants";
 import { useMultiSchema } from "../schema/schemaContext";
 import { Context } from "../App";
@@ -51,7 +52,9 @@ export const resetOverlayValues = (overlayType) => {
       _requiresAttributeUpdate: true
     },
     [FIELD_DATA_STANDARDS_OVERLAY]: { dataStandardsData: [] },
-    [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: { attributeFramingData: [] },
+    [FIELD_ATTRIBUTE_FRAMING_OVERLAY]: {
+      attributeFramingSources: []
+    },
     [FIELD_DATA_SEPARATOR_OVERLAY]: {
       decimalSeparator: ".",
       fileDelimiterData: {
@@ -67,7 +70,8 @@ export const resetOverlayValues = (overlayType) => {
       enableFileDelimiter: false,
       enableArrayDelimiter: false
     },
-    [FIELD_EXAMPLE_OVERLAY]: { exampleData: {} }
+    [FIELD_EXAMPLE_OVERLAY]: { exampleData: {} },
+    [FIELD_ENTRY_CODE_FRAMING_OVERLAY]: { entryCodeFramingSources: {} }
   };
 
   const clearData = overlayConfig[overlayType];
@@ -115,6 +119,9 @@ export const deleteOverlayData = (
     updateSchema(resetValues);
   }
 
+  // Entry code framing has no stored selection; clearing its data deselects it.
+  if (overlayType === FIELD_ENTRY_CODE_FRAMING_OVERLAY) return;
+
   // Update selection state to deselected
   updateOverlaySelection(overlayType, false);
 
@@ -161,7 +168,7 @@ export const getListOfSelectedOverlays = (overlay) => {
   const selectedKeys = [];
   const unselectedKeys = [];
   // Temporarily excluding these features
-  const keysToExclude = [FIELD_DATA_STANDARDS_OVERLAY, FIELD_ATTRIBUTE_FRAMING_OVERLAY];
+  const keysToExclude = [FIELD_DATA_STANDARDS_OVERLAY];
 
   Object.entries(overlay).forEach(([key, value]) => {
     if (keysToExclude.includes(key)) return;
