@@ -12,12 +12,13 @@ export default function SessionDraftManager() {
   const { exportData } = useOCAExport();
   const [searchParams] = useSearchParams();
 
-  // Opened from ContextHub's "Write Schema" flow, either as a popup (window.open, no
+  // Opened from ContextHub's Write Schema or Edit flow, either as a popup (window.open, no
   // noopener — window.opener is set) or embedded in an iframe (window.parent !== window).
   // Either way, sync the in-progress schema back to it on every autosave tick instead of
-  // a manual download/upload. The two cases are mutually exclusive in practice (a popup's
-  // window.parent is itself; an iframe has no window.opener), so preferring opener first
-  // is just a tiebreaker, not meaningful precedence.
+  // a manual download/upload or an explicit one-shot save. The two cases are mutually
+  // exclusive in practice (a popup's window.parent is itself; an iframe has no
+  // window.opener), so preferring opener first is just a tiebreaker, not meaningful
+  // precedence.
   const contextHubMode = searchParams.get("contexthub") === "true";
   const contextHubTarget = !contextHubMode
     ? null

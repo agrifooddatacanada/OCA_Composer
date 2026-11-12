@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import yaml from "js-yaml";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import { Context } from "../App";
+import { Context, pagesArray } from "../App";
 import { useMultiSchema } from "../schema/schemaContext";
 import { coerceIfLegacyTopLevelBundle } from "../utils/packageUtils";
 import { mapLinkMLToOCABundle } from "../SchemaTranslator/mapLinkMLToOCABundle";
@@ -15,15 +15,16 @@ import { transformToPackage } from "../SchemaTranslator/linkMLToOCA";
  * the same multi-schema editor state a native upload on /start would, then
  * jumps straight to the wizard (skipping the upload step).
  *
- * The apply-back message (SCHEMA_SAVED) is sent by EmbeddedSaveBridge,
- * which stays mounted regardless of wizard step.
+ * From there, edits sync back continuously (SessionDraftManager's autosave,
+ * same mechanism the Write Schema flow uses) rather than on an explicit
+ * save request — see the `contexthub` query param carried forward below.
  */
 const EmbeddedEdit = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isIframe = searchParams.get("iframe") === "true";
 
-  const { setCurrentPage, setSummaryExportMode } = useContext(Context);
+  const { setCurrentPage, setSummaryExportMode, setHistory } = useContext(Context);
   const { clearAllSchemas, setOcaPackage, loadAllSchemasFromOcaPackage, switchToSchema } =
     useMultiSchema();
 
@@ -66,8 +67,18 @@ const EmbeddedEdit = () => {
         loadAllSchemasFromOcaPackage(pkg);
         switchToSchema(pkg.oca_bundle.bundle.d, pkg);
         setSummaryExportMode(false);
+        // Seed a full visit history instead of jumping to View cold. ViewSchema's own Back
+        // button treats "the page before View is Landing" as "exit to Landing, not step back" —
+        // a real heuristic for someone who opened an existing schema to just look at it, but
+        // wrong here: without this, that's exactly what an empty history looks like, so Back
+        // would silently bounce out to OCA's landing page instead of into Overlays.
+        setHistory(pagesArray);
         setCurrentPage("View");
-        navigate("/start");
+        // Carry every query param forward (iframe, contexthub, lang, ...) — Home's
+        // chrome-hiding and SessionDraftManager's continuous sync both read these fresh on
+        // every page, and this navigation would otherwise silently drop out of both.
+        const query = searchParams.toString();
+        navigate(query ? `/start?${query}` : "/start");
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("[EmbeddedEdit] failed to load schema:", err);
@@ -81,8 +92,10 @@ const EmbeddedEdit = () => {
       loadAllSchemasFromOcaPackage,
       switchToSchema,
       setSummaryExportMode,
+      setHistory,
       setCurrentPage,
-      navigate
+      navigate,
+      searchParams
     ]
   );
 
