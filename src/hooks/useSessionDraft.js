@@ -34,7 +34,11 @@ export function useSessionDraft({
   schemaStates,
   currentSchemaId,
   ocaPackage,
-  currentPage
+  currentPage,
+  // Fires on the same debounce tick as the localStorage write, after it — lets a host
+  // page (e.g. ContextHub, embedding this app) piggyback on this autosave instead of
+  // running its own separate timer.
+  onAutoSave
 }) {
   const timerRef = useRef(null);
 
@@ -57,12 +61,13 @@ export function useSessionDraft({
       } catch (e) {
         console.warn("Session draft save failed:", e);
       }
+      onAutoSave?.();
     }, DEBOUNCE_MS);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [schemaStates, currentSchemaId, ocaPackage, currentPage]);
+  }, [schemaStates, currentSchemaId, ocaPackage, currentPage, onAutoSave]);
 
   // beforeunload warning
   useEffect(() => {
