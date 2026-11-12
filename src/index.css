@@ -1,3 +1,10 @@
+html {
+  /* Reserves the vertical scrollbar's width always, whether a given page needs to scroll
+     or not — otherwise centered content (e.g. the step indicator) visibly shifts sideways
+     by the scrollbar's width when moving between a short page and a tall one. */
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
