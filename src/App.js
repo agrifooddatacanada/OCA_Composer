@@ -10,7 +10,6 @@ import LearnAboutSchemaRule from "./OCADataValidator/LearnAboutSchemaRule";
 import LearnAboutDataVerification from "./OCADataValidator/LearnAboutDataVerification";
 import OCAMerge from "./OCAMerge/OCAMerge";
 import EmbeddedEdit from "./EmbeddedEdit/EmbeddedEdit";
-import EmbeddedSaveBridge from "./EmbeddedEdit/EmbeddedSaveBridge";
 import { MultiSchemaProvider } from "./schema/schemaContext";
 import SessionDraftManager from "./components/SessionDraftManager";
 import SchemaUploadWarningPopup from "./SchemaTranslator/SchemaUploadWarningPopup";
@@ -39,7 +38,13 @@ function App() {
   const [summaryExportMode, setSummaryExportMode] = useState(false);
   const [zipToReadme, setZipToReadme] = useState([]);
   const [jsonToReadme, setJsonToReadme] = useState({});
-  const [currentPage, setCurrentPage] = useState("Landing");
+  // Lazy-initialize from the real URL rather than always starting at "Landing" — otherwise a
+  // direct load of /start (e.g. ContextHub's embedded Write Schema) renders one frame with
+  // currentPage still "Landing" (stepper visible, no page content matches) before the effect
+  // in Home.js corrects it, which is a visible flash of the wrong page.
+  const [currentPage, setCurrentPage] = useState(() =>
+    window.location.pathname === "/start" ? "Start" : "Landing"
+  );
   const [currentDataValidatorPage, setCurrentDataValidatorPage] =
     useState("StartDataValidator");
   const [currentOCAMergePage, setCurrentOCAMergePage] = useState("StartOCAMerge");
@@ -293,7 +298,6 @@ function App() {
             >
               <BrowserRouter>
                 <SessionDraftManager />
-                <EmbeddedSaveBridge />
                 <SchemaUploadWarningPopup />
                 <Routes>
                   <Route path="/" element={<Landing />} />

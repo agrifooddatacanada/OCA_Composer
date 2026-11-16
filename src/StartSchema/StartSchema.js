@@ -115,7 +115,7 @@ export default function StartSchema() {
                 {t("TYPE IN COLUMN NAMES")}
               </Button>
               <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                {t("OR")}
+                {t("Or")}
               </Typography>
             </Box>
 

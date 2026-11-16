@@ -7,7 +7,7 @@ import React, {
   useCallback,
   useMemo
 } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import "./App.css";
 import { Box } from "@mui/material";
@@ -125,6 +125,15 @@ const Home = ({ currentPage, setCurrentPage }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  // ContextHub embeds this wizard in an iframe (Write Schema, and Edit via EmbeddedEdit's
+  // hand-off). The branded header banner (logo + per-step instruction text) and the
+  // partner-logo footer are chrome ContextHub's own composer chrome already substitutes
+  // for — hide them so the limited iframe height goes to the wizard itself. The step
+  // progress indicator stays: unlike the banner text, it's the only way to jump directly to
+  // a step instead of reaching it one Back/Next click at a time. Back/Next themselves also
+  // stay regardless: each page renders its own, independent of this shared layout.
+  const isEmbedded = searchParams.get("iframe") === "true";
   const { setSummaryExportMode } = useContext(Context);
 
   useLayoutEffect(() => {
@@ -525,7 +534,7 @@ const Home = ({ currentPage, setCurrentPage }) => {
 
   return (
     <>
-      <Header currentPage={currentPage} />
+      {!isEmbedded && <Header currentPage={currentPage} />}
 
       <Box sx={{ flex: 1 }}>
         {/* debug logs removed to prevent noisy renders */}
@@ -602,7 +611,7 @@ const Home = ({ currentPage, setCurrentPage }) => {
         {currentPage === "DataSeparator" && <DataSeparator />}
         {currentPage === "ExampleOverlay" && <ExampleOverlay />}
       </Box>
-      <Footer />
+      {!isEmbedded && <Footer />}
     </>
   );
 };
