@@ -4,7 +4,6 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
-  Suspense,
   useRef
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -61,11 +60,6 @@ import ErrorPopup from "./ErrorPopup";
 import CustomRouterLink from "../components/CustomRouterLink";
 import ConfirmResetCard from "./ConfirmResetCard";
 import LinkCard from "./LinkCard";
-
-// Lazy load the schema visualization component to avoid React hook issues
-const SchemaVisualizationEmbed = React.lazy(
-  () => import("../SchemaVisualization/SchemaVisualizationEmbed")
-);
 
 export default function ViewSchema({
   pageBack,
@@ -144,7 +138,6 @@ export default function ViewSchema({
 
   // Schema language state - defaults to null (use i18n), can be overridden by schema buttons
   const [schemaLanguageOverride, setSchemaLanguageOverride] = useState(null);
-  const [vizVersion, setVizVersion] = useState(0);
 
   // Helper to get current effective language (standardized approach)
   const getCurrentLanguage = () =>
@@ -153,7 +146,6 @@ export default function ViewSchema({
   // Reset schema language override when app language changes (i18n primary approach)
   useEffect(() => {
     setSchemaLanguageOverride(null); // Reset to use i18n language
-    setVizVersion((v) => v + 1); // Force visualization update
   }, [t]); // Track i18n language changes
 
   const VIEW_SCHEMA_LANGUAGE_STRIP_WIDTH = "70rem";
@@ -202,7 +194,6 @@ export default function ViewSchema({
                 key={language}
                 onClick={() => {
                   setSchemaLanguageOverride(language);
-                  setVizVersion((v) => v + 1);
                 }}
                 variant="text"
                 color="inherit"
@@ -456,6 +447,24 @@ export default function ViewSchema({
     return anySchemaHasChildren || hasDependencies;
   }, [schemaStates, pkgFromState]);
 
+  // Load the schema visualization component on demand, once it's actually needed.
+  // Uses a plain dynamic import + state instead of React.lazy/Suspense: on this
+  // component, the Suspense retry that follows a lazy import resolving can get
+  // scheduled but never flushed when nothing else causes a subsequent render,
+  // leaving the panel stuck on its fallback indefinitely. A manual import still
+  // keeps the chunk code-split, without going through Suspense's retry path.
+  const [SchemaVisualizationEmbed, setSchemaVisualizationEmbed] = useState(null);
+  useEffect(() => {
+    if (!hasHierarchy || SchemaVisualizationEmbed) return;
+    let isMounted = true;
+    import("../SchemaVisualization/SchemaVisualizationEmbed").then((mod) => {
+      if (isMounted) setSchemaVisualizationEmbed(() => mod.default);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [hasHierarchy, SchemaVisualizationEmbed]);
+
   // Update the package data when schemas are modified
   useEffect(() => {
     // For manual creation, ocaPackage is null - rebuildOcaPackageFromEditorState will create the structure
@@ -484,7 +493,6 @@ export default function ViewSchema({
     // - Converts "Child Schema" -> refn:name and builds dependencies automatically
     const pkgFromState = rebuildOcaPackageFromEditorState(ocaPackage);
     setPkgWithChanges(pkgFromState);
-    setVizVersion((v) => v + 1);
   }, [ocaPackage, schemaStates, rebuildOcaPackageFromEditorState]);
 
   // Removed in favor of global language toggle (EN/FR)
@@ -1100,33 +1108,30 @@ export default function ViewSchema({
 
                 {/* Visualization embed */}
                 <Box sx={{ marginBottom: 0, width: "100%", minHeight: 500 }}>
-                  <Suspense
-                    fallback={
-                      <Box
-                        sx={{
-                          width: "100%",
-                          height: 500,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          border: `1px solid ${CustomPalette.GREY_300}`,
-                          borderRadius: 2,
-                          backgroundColor: "#f8f9fa"
-                        }}
-                      >
-                        <Spinner size={40} text="" />
-                      </Box>
-                    }
-                  >
+                  {SchemaVisualizationEmbed ? (
                     <SchemaVisualizationEmbed
-                      key={`viz-${vizVersion}-${getPackageBundleId(pkgFromState)}-${currentSchemaId}-${schemaLanguageOverride || i18next.language}`}
                       schemaLanguageOverride={getCurrentLanguage()}
                       pkg={pkgFromState}
                       viewMode={visualizationMode}
                       currentSchemaId={currentSchemaId}
                       setCurrentSchemaId={handleSchemaSwitch}
                     />
-                  </Suspense>
+                  ) : (
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: 500,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: `1px solid ${CustomPalette.GREY_300}`,
+                        borderRadius: 2,
+                        backgroundColor: "#f8f9fa"
+                      }}
+                    >
+                      <Spinner size={40} text="" />
+                    </Box>
+                  )}
                 </Box>
               </>
             )}
