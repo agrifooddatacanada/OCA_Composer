@@ -1,0 +1,29 @@
+name: poultry_trial
+description: Broiler feeding trial
+slots:
+  bird_id:
+    range: string
+    required: true
+    pattern: "^[A-Z]{2}[0-9]{3}$"
+    description: Bird identifier
+  live_weight:
+    range: decimal
+    minimum_value: 0
+    maximum_value: 5000
+    unit:
+      ucum_code: g
+  treatment:
+    range: TreatmentEnum
+    required: true
+  colour:
+    range: ColourEnum
+enums:
+  TreatmentEnum:
+    permissible_values:
+      CTRL:
+        description: Control diet
+      HIGH:
+        description: High-protein diet
+classes:
+  Bird:
+    slots: [bird_id, live_weight, treatment, colour]

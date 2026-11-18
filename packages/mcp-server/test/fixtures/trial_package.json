@@ -1,0 +1,128 @@
+{
+  "type": "oca_package/1.0",
+  "oca_bundle": {
+    "bundle": {
+      "v": "OCAB11000000_json",
+      "d": "Etrial_bundle_provisional",
+      "capture_base": {
+        "d": "Etrial_capture_base",
+        "type": "spec/capture_base/1.1",
+        "attributes": {
+          "bird_id": "Text",
+          "live_weight": "Numeric",
+          "treatment": "Text",
+          "hatch_date": "DateTime",
+          "farmer_name": "Text",
+          "tags": "Array[Text]"
+        },
+        "classification": "",
+        "flagged_attributes": ["farmer_name"]
+      },
+      "overlays": {
+        "meta": [
+          {
+            "capture_base": "Etrial_capture_base",
+            "type": "spec/overlays/meta/1.1",
+            "language": "eng",
+            "name": "Broiler trial",
+            "description": "Broiler feeding trial measurements"
+          }
+        ],
+        "label": [
+          {
+            "capture_base": "Etrial_capture_base",
+            "type": "spec/overlays/label/1.1",
+            "language": "eng",
+            "attribute_labels": {
+              "bird_id": "Bird ID",
+              "live_weight": "Live weight",
+              "treatment": "Treatment",
+              "hatch_date": "Hatch date",
+              "farmer_name": "Farmer",
+              "tags": "Tags"
+            }
+          }
+        ],
+        "entry": [
+          {
+            "capture_base": "Etrial_capture_base",
+            "type": "spec/overlays/entry/1.1",
+            "language": "eng",
+            "attribute_entries": {
+              "treatment": { "CTRL": "Control diet", "HIGH": "High-protein diet" }
+            }
+          }
+        ],
+        "entry_code": {
+          "capture_base": "Etrial_capture_base",
+          "type": "spec/overlays/entry_code/1.1",
+          "attribute_entry_codes": { "treatment": ["CTRL", "HIGH"] }
+        },
+        "format": {
+          "capture_base": "Etrial_capture_base",
+          "type": "spec/overlays/format/1.1",
+          "attribute_formats": {
+            "bird_id": "^[A-Z]{2}[0-9]{3}$",
+            "live_weight": "^[-+]?\\d*\\.?\\d+$",
+            "hatch_date": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "farmer_name": "^.{0,5}$"
+          }
+        },
+        "conformance": {
+          "capture_base": "Etrial_capture_base",
+          "type": "spec/overlays/conformance/1.1",
+          "attribute_conformance": {
+            "bird_id": "M",
+            "live_weight": "M",
+            "treatment": "O",
+            "hatch_date": "O",
+            "farmer_name": "O",
+            "tags": "O"
+          }
+        },
+        "character_encoding": {
+          "capture_base": "Etrial_capture_base",
+          "type": "spec/overlays/character_encoding/1.1",
+          "attribute_character_encoding": {
+            "bird_id": "utf-8",
+            "live_weight": "utf-8",
+            "treatment": "utf-8",
+            "hatch_date": "utf-8",
+            "farmer_name": "utf-8",
+            "tags": "utf-8"
+          }
+        },
+        "unit": {
+          "capture_base": "Etrial_capture_base",
+          "type": "spec/overlays/unit/1.1",
+          "measurement_system": "Metric",
+          "attribute_units": { "live_weight": "g" }
+        }
+      }
+    },
+    "dependencies": []
+  },
+  "extensions": {
+    "adc": {
+      "Etrial_capture_base": {
+        "overlays": {
+          "range": {
+            "type": "community/overlays/adc/range/1.1",
+            "attributes": {
+              "live_weight": {
+                "lower": "100",
+                "lower_inclusive": true,
+                "upper": "4000",
+                "upper_inclusive": false
+              }
+            }
+          },
+          "array_delimiter": {
+            "type": "community/overlays/adc/array_delimiter/1.1",
+            "attributes": { "tags": ";" }
+          }
+        }
+      }
+    }
+  }
+}

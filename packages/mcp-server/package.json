@@ -1,0 +1,38 @@
+{
+  "name": "@oca-composer/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP server that lets AI assistants validate datasets and work with OCA schemas using OCA Composer's logic",
+  "license": "EUPL-1.2",
+  "type": "module",
+  "bin": {
+    "oca-composer-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node dist/index.js",
+    "test": "node build.mjs && node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@oca-composer/oca-core": "0.1.0",
+    "fuse.js": "^7.1.0",
+    "js-yaml": "^4.1.0",
+    "jszip": "^3.10.1",
+    "luxon": "^3.6.1",
+    "oca_package": "^2.3.0",
+    "papaparse": "^5.4.1",
+    "uuid": "^13.0.0",
+    "xlsx": "^0.18.5",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

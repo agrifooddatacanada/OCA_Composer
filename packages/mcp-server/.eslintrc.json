@@ -1,0 +1,16 @@
+{
+  "env": {
+    "browser": false,
+    "node": true,
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022
+  },
+  "rules": {
+    // Node's ESM loader requires explicit file extensions.
+    "import/extensions": ["error", "ignorePackages"],
+    // eslint-plugin-import's resolver doesn't understand package "exports" maps (used by the MCP SDK).
+    "import/no-unresolved": ["error", { "ignore": ["^@modelcontextprotocol/sdk/"] }]
+  }
+}
