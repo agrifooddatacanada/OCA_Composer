@@ -17,6 +17,8 @@ export * from "./package/verifyOcaIntegrity";
 
 export * from "./visualization/dataUtils";
 
+export * from "./dataset/textDecoding";
+
 export * from "./formBuilder/referenceQuestionUtils";
 export { default as convertOverlayToFormBuilder } from "./formBuilder/convertOverlayToFormBuilder";
 
