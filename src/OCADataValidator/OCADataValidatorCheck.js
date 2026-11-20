@@ -105,7 +105,7 @@ function FlaggedHeader({
 }) {
   const { getSchema } = useMultiSchema();
   const schemaState = getSchema();
-  const labelDescription = lanAttributeRowData[lang];
+  const labelDescription = lanAttributeRowData?.[lang] || [];
   const value = labelDescription.find((item) => item?.Attribute === props?.displayName);
   const formatRule = formatRuleRowData.find(
     (item) => item?.Attribute === props?.displayName

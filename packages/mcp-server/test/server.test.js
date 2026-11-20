@@ -304,6 +304,23 @@ describe("convert_linkml_to_oca", () => {
     assert.match(result.warnings[0], /Enum "ColourEnum" is referenced but not defined/);
   });
 
+  test("a converted package validates (list-shaped entry_code overlay)", async () => {
+    // Regression: the converter emits entry_code as a list, which used to crash
+    // the validator with "Cannot read properties of undefined (reading 'bird_id')".
+    const { package: pkg } = await call("convert_linkml_to_oca", {
+      linkml_text: await readFile(fixture("trial.linkml.yaml"), "utf8")
+    });
+    const result = await call("validate_dataset", {
+      package_json: JSON.stringify(pkg),
+      dataset_csv: "bird_id,live_weight,treatment,colour\nAB123,10,NOPE,red\nzz,20,CTRL,blue\n"
+    });
+    assert.equal(result.error, undefined);
+    assert.equal(result.passed, false);
+    const issues = JSON.stringify(result);
+    assert.match(issues, /treatment/);
+    assert.match(issues, /bird_id/);
+  });
+
   test("writes to output_path and refuses to overwrite by default", async () => {
     const outputPath = path.join(tmp, "from_linkml.json");
     const first = await call("convert_linkml_to_oca", {

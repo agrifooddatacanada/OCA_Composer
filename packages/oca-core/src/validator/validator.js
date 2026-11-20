@@ -106,11 +106,21 @@ export default class OCABundle {
   }
 
   getEntryCodes() {
-    try {
-      return this.overlays[EC_KEY][ATTR_EC_KEY];
-    } catch (error) {
-      return {};
-    }
+    // The entry_code overlay is normally a single object, but packages built
+    // from other sources (e.g. LinkML import) carry it as a list with one entry
+    // per language. Accept both shapes; the first definition of an attribute wins.
+    const overlay = this.overlays?.[EC_KEY];
+    if (!overlay) return {};
+    const entries = Array.isArray(overlay) ? overlay : [overlay];
+    const merged = {};
+    entries.forEach((entry) => {
+      const codes = entry?.[ATTR_EC_KEY];
+      if (!codes || typeof codes !== "object") return;
+      Object.keys(codes).forEach((attr) => {
+        if (!(attr in merged)) merged[attr] = codes[attr];
+      });
+    });
+    return merged;
   }
 
   getCharacterEncoding(attrName) {
