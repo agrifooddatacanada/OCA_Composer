@@ -1,1 +1,3 @@
-export { default } from "@oca-composer/oca-core/src/formBuilder/convertOverlayToFormBuilder";
+import value from "@oca-composer/oca-core/src/formBuilder/convertOverlayToFormBuilder";
+
+export default value;
