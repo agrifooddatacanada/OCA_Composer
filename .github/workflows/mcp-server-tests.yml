@@ -1,0 +1,35 @@
+name: MCP server tests
+
+on:
+  push:
+    branches: [dev, feat/mcp-server]
+    paths:
+      - "packages/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/mcp-server-tests.yml"
+  pull_request:
+    paths:
+      - "packages/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/mcp-server-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Builds the bundle with esbuild, then drives it with a real MCP client
+      # (in-memory and over stdio).
+      - name: Test MCP server
+        run: npm test --workspace @oca-composer/mcp-server
