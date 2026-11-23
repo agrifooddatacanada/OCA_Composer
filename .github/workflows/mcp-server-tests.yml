@@ -2,7 +2,7 @@ name: MCP server tests
 
 on:
   push:
-    branches: [dev, feat/mcp-server]
+    branches: [agreeable-mushroom, feat/mcp-server]
     paths:
       - "packages/**"
       - "package.json"
