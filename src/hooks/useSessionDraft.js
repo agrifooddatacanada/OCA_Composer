@@ -34,11 +34,13 @@ export function useSessionDraft({
   schemaStates,
   currentSchemaId,
   ocaPackage,
-  currentPage
+  currentPage,
+  onAutoSave
 }) {
   const timerRef = useRef(null);
 
-  // Debounced autosave
+  // Debounced autosave. onAutoSave (e.g. syncing to a ContextHub popup opener)
+  // piggybacks on this same timer instead of running its own.
   useEffect(() => {
     if (!hasAnyInitializedSchema(schemaStates)) return;
 
@@ -57,12 +59,13 @@ export function useSessionDraft({
       } catch (e) {
         console.warn("Session draft save failed:", e);
       }
+      onAutoSave?.();
     }, DEBOUNCE_MS);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [schemaStates, currentSchemaId, ocaPackage, currentPage]);
+  }, [schemaStates, currentSchemaId, ocaPackage, currentPage, onAutoSave]);
 
   // beforeunload warning
   useEffect(() => {

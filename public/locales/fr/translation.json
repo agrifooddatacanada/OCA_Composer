@@ -13,6 +13,7 @@
   "equals the exclusive upper bound {{bound}}": "est égale à la borne supérieure exclusive {{bound}}",
   "Metadata": "Métadonnées",
   "TYPE IN COLUMN NAMES": "Taper les noms de colonnes",
+  "Write Names": "Écrire les noms",
   "Import a spreadsheet by click or drag-and-drop.": "Importer une feuille de calcul\n(Cliquer ou glisser-déposer)",
   "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Cliquez ici pour sélectionner un fichier .csv ou un ensemble de schémas, ou faites-le glisser et déposez-le ici.",
   "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.": "Téléchargez un nouveau fichier contenant vos codes d'entrée, ou sélectionnez un attribut existant pour copier ses codes d'entrée.",

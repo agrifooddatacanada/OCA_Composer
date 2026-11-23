@@ -1,4 +1,5 @@
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Alert, Box, Button } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -23,6 +24,12 @@ const BackNextSkeleton = ({
   const { t } = useTranslation();
   const primaryColor = usePrimaryColor();
   const fontFamily = useFontFamily();
+  const [searchParams] = useSearchParams();
+  // Embedded in ContextHub: Home hides the branded header and step indicator, so this is
+  // the only navigation left on taller pages (e.g. Metadata, with its per-language fields).
+  // Pin it so a page that's taller than the iframe's own viewport can't scroll it out of
+  // view with no other way back to it.
+  const isEmbedded = searchParams.get("iframe") === "true";
   return (
     <Box>
       <Box
@@ -44,7 +51,10 @@ const BackNextSkeleton = ({
             gridTemplateColumns: "auto minmax(0, 1fr) auto",
             alignItems: "start",
             columnGap: 2,
-            position: "relative",
+            position: isEmbedded ? "sticky" : "relative",
+            top: isEmbedded ? 0 : "auto",
+            zIndex: isEmbedded ? 10 : "auto",
+            py: isEmbedded ? 1 : 0,
             bgcolor: "background.default"
           }}
         >

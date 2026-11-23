@@ -13,6 +13,7 @@
   "equals the exclusive upper bound {{bound}}": "equals the exclusive upper bound {{bound}}",
   "Metadata": "Metadata",
   "TYPE IN COLUMN NAMES": "Type In Column Names",
+  "Write Names": "Write Names",
   "Click here to select a .csv file or schema bundle, or drag and drop one here.": "Click here to select a .csv file or schema bundle, or drag and drop one here.",
   "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.": "Upload a new file containing your entry codes, or select an existing attribute to copy its entry codes from.",
   "Schemas add value to data": "Schemas add value to data",
