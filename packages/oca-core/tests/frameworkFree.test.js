@@ -55,6 +55,8 @@ describe("oca-core stays framework-free", () => {
     expect(typeof core.mapLinkMLToOCABundle).toBe("function");
     expect(typeof core.parseOcaZipArrayBuffer).toBe("function");
     expect(typeof core.searchUnits).toBe("function");
+    expect(typeof core.buildSchemaExport).toBe("function");
+    expect(typeof core.generateOcaPackageJson).toBe("function");
   });
 
   test("source files only import within the package or from declared dependencies", () => {
