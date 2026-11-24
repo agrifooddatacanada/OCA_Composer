@@ -1,5 +1,194 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`useOCAExport imported export baseline examplePackage: DSL and exported package: dsl 1`] = `
+Array [
+  "# add attributes (capture base)
+ADD ATTRIBUTE Farm=Text Age=Numeric LiveWt=Numeric BreastWt=Numeric Glucose=Numeric Lipase=Numeric
+# Add classification
+ADD classification RDF401
+# Add meta overlay
+ADD Meta en PROPS name=\\"Chicken gut health\\" description=\\"Measurements of chicken gut health\\"
+ADD Meta fr PROPS name=\\"santée intestinale des poulets\\" description=\\"Mesures de la santée intestinale des poulets\\"
+# Add Format Overlay
+# Add Conformance Overlay
+# Add Cardinality Overlay
+# Add label overlay
+ADD Label en ATTRS Farm=\\"Farm Letter Indentifier\\" Age=\\"Bird Age\\" LiveWt=\\"Live Weight\\" BreastWt=\\"Breast Weight\\" Glucose=\\"Glucose Concentration\\" Lipase=\\"Lipase Content\\"
+ADD Label fr ATTRS Farm=\\"Lettre itenditifant la ferme\\" Age=\\"Age de l'animal\\" LiveWt=\\"Poids vif\\" BreastWt=\\"Poids de la poitrine\\" Glucose=\\"Concentration de glucose\\" Lipase=\\"Concentration de lipase\\"
+# Add information overlay
+ADD Information en ATTRS Farm=\\"a letter given to the farm for identification\\" Age=\\"age of bird in days\\" LiveWt=\\"weight in grams at 28 days\\" BreastWt=\\"Breast weight in grams\\" Glucose=\\"glucose content in mmol/L\\" Lipase=\\"lipase content in U/L\\"
+ADD Information fr ATTRS Farm=\\"Letter assignee a chaque ferme pour identification\\" Age=\\"Age de l'animal compté en jours\\" LiveWt=\\"Poids vif à 28 jours en gramme\\" BreastWt=\\"Poids de la poitrine en gramme\\" Glucose=\\"Concentration de glucose en mmol/L\\" Lipase=\\"Concentration de glucose en U/L\\"
+# Add entry code overlay
+
+# Add units overlay
+ADD Unit ATTRS Age=\\"days\\" LiveWt=\\"g\\" BreastWt=\\"g\\" Glucose=\\"mmol/L\\" Lipase=\\"U/L\\"
+# Add character encoding overlay
+",
+]
+`;
+
+exports[`useOCAExport imported export baseline examplePackage: DSL and exported package: package 1`] = `
+Object {
+  "d": "EMqSepH5HFvQYm50DnrQHtqdtD8T9o8IJY4JMWiPuFCH",
+  "extensions": Object {
+    "adc": Object {
+      "EjhmGigwQ3_WyJfuVlGeBRBmf8nabqbfa1B62BVFjYmM": Object {
+        "d": "EDVkloXAb3IulYyhWgGKmwRmU6hXyGlHvnqRzVxSmueX",
+        "overlays": Object {
+          "ordering": Object {
+            "attribute_ordering": Array [
+              "Farm",
+              "Age",
+              "LiveWt",
+              "BreastWt",
+              "Glucose",
+              "Lipase",
+            ],
+            "capture_base": "EjhmGigwQ3_WyJfuVlGeBRBmf8nabqbfa1B62BVFjYmM",
+            "d": "EKOSqe4NF05lXq3N-pTurhx-7E0fWbyuzaVEtENFh2Na",
+            "entry_code_ordering": Object {},
+            "type": "community/overlays/adc/ordering/1.0",
+          },
+        },
+        "type": "community/adc/extension/1.0",
+      },
+    },
+  },
+  "oca_bundle": Object {
+    "bundle": Object {
+      "capture_base": Object {
+        "attributes": Object {
+          "Age": "Numeric",
+          "BreastWt": "Numeric",
+          "Farm": "Text",
+          "Glucose": "Numeric",
+          "Lipase": "Numeric",
+          "LiveWt": "Numeric",
+        },
+        "classification": "",
+        "d": "EjhmGigwQ3_WyJfuVlGeBRBmf8nabqbfa1B62BVFjYmM",
+        "flagged_attributes": Array [],
+        "type": "spec/capture_base/1.0",
+      },
+      "d": "Er5gY9EIR5N46AVXYClsgBcjEic-Hrt3vLiZUhULJEQ8",
+      "overlays": Object {},
+      "v": "OCAB10JSON000000_",
+    },
+    "dependencies": Array [],
+  },
+  "type": "oca_package/1.0",
+}
+`;
+
+exports[`useOCAExport imported export baseline linkmlWithEnum: DSL and exported package: dsl 1`] = `
+Array [
+  "# add attributes (capture base)
+ADD ATTRIBUTE bird_id=Text live_weight=Numeric treatment=Text
+# Add classification
+# Add meta overlay
+ADD Meta en PROPS name=\\"poultry_trial\\" description=\\"Broiler feeding trial\\"
+# Add Format Overlay
+ADD Format ATTRS bird_id=\\"^[A-Z]{2}[0-9]{3}$\\" live_weight=\\"^[-+]?\\\\d*\\\\.?\\\\d+$\\"
+# Add Conformance Overlay
+ADD CONFORMANCE ATTRS bird_id=M live_weight=O treatment=M
+# Add Cardinality Overlay
+# Add label overlay
+# Add information overlay
+ADD Information en ATTRS bird_id=\\"Bird identifier\\"
+# Add entry code overlay
+ADD ENTRY_CODE ATTRS treatment=[\\"CTRL\\", \\"HIGH\\"]
+ADD ENTRY en ATTRS treatment={\\"CTRL\\": \\"Control diet\\", \\"HIGH\\": \\"High-protein diet\\"}
+
+# Add units overlay
+ADD Unit ATTRS live_weight=\\"g\\"
+# Add character encoding overlay
+",
+]
+`;
+
+exports[`useOCAExport imported export baseline linkmlWithEnum: DSL and exported package: package 1`] = `
+Object {
+  "d": "EP--Nb2KNUzF1AOC02KCcSYKpQsz4QvPj46AxjtIopOn",
+  "extensions": Object {
+    "adc": Object {
+      "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs": Object {
+        "d": "EH4tYkdx5YvY2cSRuJ1Gz_S4LKAs6BGO4OMpdF2OornE",
+        "overlays": Object {
+          "ordering": Object {
+            "attribute_ordering": Array [
+              "bird_id",
+              "live_weight",
+              "treatment",
+            ],
+            "capture_base": "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs",
+            "d": "EOQ58mEtaVrSM8oM7KR-g_IbBEyiNjJK-jho39RMem21",
+            "entry_code_ordering": Object {
+              "treatment": Array [
+                "CTRL",
+                "HIGH",
+              ],
+            },
+            "type": "community/overlays/adc/ordering/1.0",
+          },
+          "range": Object {
+            "attributes": Object {
+              "live_weight": Object {
+                "lower": "0",
+                "lower_inclusive": true,
+                "upper": "5000",
+                "upper_inclusive": true,
+              },
+            },
+            "capture_base": "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs",
+            "d": "EHDjDtHjdOCscsICSALOsI9IcJxxciFgIskwBFK5NP-j",
+            "type": "community/overlays/adc/range/1.0",
+          },
+          "unit_framing": Object {
+            "capture_base": "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs",
+            "d": "EGN-MwlKIJTanTg-syhtqY4KaQlht4tk-DYk-ApghNeI",
+            "framing_metadata": Object {
+              "id": "UCUM",
+              "label": "Unified Code for Units of Measure",
+              "location": "https://ucum.org/",
+              "version": "",
+            },
+            "type": "community/overlays/adc/unit_framing/1.0",
+            "units": Object {
+              "g": Object {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "g",
+              },
+            },
+          },
+        },
+        "type": "community/adc/extension/1.0",
+      },
+    },
+  },
+  "oca_bundle": Object {
+    "bundle": Object {
+      "capture_base": Object {
+        "attributes": Object {
+          "bird_id": "Text",
+          "live_weight": "Numeric",
+          "treatment": "Text",
+        },
+        "classification": "",
+        "d": "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs",
+        "flagged_attributes": Array [],
+        "type": "spec/capture_base/1.0",
+      },
+      "d": "E_r39lESYvW9kzNGf4ytzkwx7I_TNy7mLqzmb1mlURcY",
+      "overlays": Object {},
+      "v": "OCAB10JSON000000_",
+    },
+    "dependencies": Array [],
+  },
+  "type": "oca_package/1.0",
+}
+`;
+
 exports[`useOCAExport manual export baseline adversarialEscaping: DSL and exported package: dsl 1`] = `
 "# add attributes (capture base)
 ADD ATTRIBUTE q1=Text q2=Text

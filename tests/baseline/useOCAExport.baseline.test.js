@@ -23,7 +23,13 @@ import { Context } from "../../src/App";
 import { MultiSchemaProvider, useMultiSchema } from "../../src/schema/schemaContext";
 import useOCAExport from "../../src/hooks/useOCAExport";
 import { overlayItems } from "../../src/constants/constants";
+import {
+  getPackageBundleId,
+  mapLinkMLToOCABundle,
+  transformToPackage
+} from "@oca-composer/oca-core";
 import { allFixtures } from "./fixtures/editorStates";
+import examplePackage from "../../packages/oca-core/tests/fixtures/Package_example.json";
 
 jest.mock("react-router-dom", () => ({ useNavigate: () => jest.fn() }));
 
@@ -169,6 +175,82 @@ describe("useOCAExport manual export baseline", () => {
       expect(result.current.exporter.error).toBe("");
       expect(submittedDsl).toHaveLength(1);
       expect(submittedDsl[0]).toMatchSnapshot("dsl");
+      expect(exported).toMatchSnapshot("package");
+    });
+  });
+});
+
+const linkmlTrialSchema = {
+  name: "poultry_trial",
+  description: "Broiler feeding trial",
+  slots: {
+    bird_id: {
+      range: "string",
+      required: true,
+      pattern: "^[A-Z]{2}[0-9]{3}$",
+      description: "Bird identifier"
+    },
+    live_weight: {
+      range: "decimal",
+      minimum_value: 0,
+      maximum_value: 5000,
+      unit: { ucum_code: "g" }
+    },
+    treatment: { range: "TreatmentEnum", required: true }
+  },
+  enums: {
+    TreatmentEnum: {
+      permissible_values: {
+        CTRL: { description: "Control diet" },
+        HIGH: { description: "High-protein diet" }
+      }
+    }
+  },
+  classes: { Bird: { slots: ["bird_id", "live_weight", "treatment"] } }
+};
+
+const importedFixtures = {
+  examplePackage: () => JSON.parse(JSON.stringify(examplePackage)),
+  linkmlWithEnum: () => transformToPackage(mapLinkMLToOCABundle(linkmlTrialSchema))
+};
+
+describe("useOCAExport imported export baseline", () => {
+  let consoleErrorSpy;
+  let consoleWarnSpy;
+
+  beforeEach(() => {
+    mockUuidCounter = 0;
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
+    delete global.fetch;
+  });
+
+  Object.entries(importedFixtures).forEach(([name, makePackage]) => {
+    test(`${name}: DSL and exported package`, async () => {
+      const { submittedDsl } = installFakeBundleApi();
+      const pkg = makePackage();
+      const { result } = renderExport();
+
+      // Same sequence as useHandleSchemaFileDrop after a package or LinkML upload.
+      act(() => {
+        result.current.multiSchema.setOcaPackage(pkg);
+        result.current.multiSchema.loadAllSchemasFromOcaPackage(pkg);
+        result.current.multiSchema.switchToSchema(getPackageBundleId(pkg), pkg);
+      });
+
+      let exported;
+      await act(async () => {
+        exported = await result.current.exporter.exportData({ download: false });
+      });
+
+      expect(result.current.exporter.error).toBe("");
+      expect(submittedDsl.length).toBeGreaterThan(0);
+      expect(submittedDsl).toMatchSnapshot("dsl");
       expect(exported).toMatchSnapshot("package");
     });
   });
