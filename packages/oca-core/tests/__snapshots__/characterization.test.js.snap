@@ -1,0 +1,1523 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LinkML translation maps a LinkML schema to an OCA bundle and package: bundle 1`] = `
+Object {
+  "captureBaseId": "linkml_poultry_trial_1700000000000_capture_base",
+  "capture_base": Object {
+    "attributes": Object {
+      "bird_id": "Text",
+      "live_weight": "Numeric",
+      "sample_dates": "Array[Datetime]",
+      "treatment": "Text",
+    },
+    "d": "linkml_poultry_trial_1700000000000_capture_base",
+    "flagged_attributes": Array [
+      "treatment",
+    ],
+    "language": "en",
+    "type": "spec/capture_base/1.0",
+  },
+  "d": "linkml_poultry_trial_1700000000000",
+  "extensions": Object {
+    "range": Object {
+      "attributes": Object {
+        "live_weight": Object {
+          "lower": "0",
+          "lower_inclusive": true,
+          "upper": "5000",
+          "upper_inclusive": true,
+        },
+      },
+      "capture_base": "",
+      "type": "community/overlays/adc/range/1.1",
+    },
+    "unit_framing": Object {
+      "units": Object {
+        "g": Object {
+          "predicate_id": "skos:exactMatch",
+          "term_id": "g",
+        },
+      },
+    },
+  },
+  "overlays": Object {
+    "cardinality": Object {
+      "attribute_cardinality": Object {
+        "sample_dates": "1-3",
+      },
+      "capture_base": "",
+      "type": "spec/overlays/cardinality/1.0",
+    },
+    "conformance": Object {
+      "attribute_conformance": Object {
+        "bird_id": "M",
+        "live_weight": "O",
+        "sample_dates": "O",
+        "treatment": "M",
+      },
+      "capture_base": "",
+      "type": "spec/overlays/conformance/1.0",
+    },
+    "entry": Array [
+      Object {
+        "attribute_entries": Object {
+          "treatment": Object {
+            "CTRL": "Control diet",
+            "HIGH": "High-protein diet",
+          },
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/entry/1.0",
+      },
+    ],
+    "entry_code": Array [
+      Object {
+        "attribute_entry_codes": Object {
+          "treatment": Array [
+            "CTRL",
+            "HIGH",
+          ],
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/entry_code/1.0",
+      },
+    ],
+    "format": Object {
+      "attribute_formats": Object {
+        "bird_id": "^[A-Z]{2}[0-9]{3}$",
+        "live_weight": "^[-+]?\\\\d*\\\\.?\\\\d+$",
+      },
+      "capture_base": "",
+      "type": "spec/overlays/format/1.0",
+    },
+    "information": Array [
+      Object {
+        "attribute_information": Object {
+          "bird_id": "Bird identifier",
+          "live_weight": "Live weight at slaughter",
+          "treatment": "Feed treatment group",
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/information/1.0",
+      },
+    ],
+    "label": Array [
+      Object {
+        "attribute_labels": Object {
+          "bird_id": "Bird ID",
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/label/1.0",
+      },
+    ],
+    "meta": Array [
+      Object {
+        "capture_base": "",
+        "description": "Broiler feeding trial",
+        "language": "en",
+        "name": "poultry_trial",
+        "type": "spec/overlays/meta/1.0",
+      },
+    ],
+    "standard": Array [
+      Object {
+        "attr_standards": Object {
+          "bird_id": "http://purl.obolibrary.org/obo/FOODON_00000001",
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/standard/1.0",
+      },
+    ],
+    "unit": Object {
+      "attribute_units": Object {
+        "live_weight": "g",
+      },
+      "capture_base": "",
+      "measurement_system": "Metric",
+      "type": "spec/overlays/unit/1.0",
+    },
+  },
+}
+`;
+
+exports[`LinkML translation maps a LinkML schema to an OCA bundle and package: package 1`] = `
+Object {
+  "__composerImportSource": "linkml",
+  "dependencies": Array [],
+  "extensions": Object {
+    "adc": Object {
+      "linkml_poultry_trial_1700000000000_capture_base": Object {
+        "overlays": Object {
+          "range": Object {
+            "attributes": Object {
+              "live_weight": Object {
+                "lower": "0",
+                "lower_inclusive": true,
+                "upper": "5000",
+                "upper_inclusive": true,
+              },
+            },
+            "capture_base": "",
+            "type": "community/overlays/adc/range/1.1",
+          },
+          "unit_framing": Object {
+            "units": Object {
+              "g": Object {
+                "predicate_id": "skos:exactMatch",
+                "term_id": "g",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  "oca_bundle": Object {
+    "bundle": Object {
+      "capture_base": Object {
+        "attributes": Object {
+          "bird_id": "Text",
+          "live_weight": "Numeric",
+          "sample_dates": "Array[Datetime]",
+          "treatment": "Text",
+        },
+        "d": "linkml_poultry_trial_1700000000000_capture_base",
+        "flagged_attributes": Array [
+          "treatment",
+        ],
+        "language": "en",
+        "type": "spec/capture_base/1.0",
+      },
+      "d": "linkml_poultry_trial_1700000000000",
+      "overlays": Object {
+        "cardinality": Object {
+          "attribute_cardinality": Object {
+            "sample_dates": "1-3",
+          },
+          "capture_base": "",
+          "type": "spec/overlays/cardinality/1.0",
+        },
+        "conformance": Object {
+          "attribute_conformance": Object {
+            "bird_id": "M",
+            "live_weight": "O",
+            "sample_dates": "O",
+            "treatment": "M",
+          },
+          "capture_base": "",
+          "type": "spec/overlays/conformance/1.0",
+        },
+        "entry": Array [
+          Object {
+            "attribute_entries": Object {
+              "treatment": Object {
+                "CTRL": "Control diet",
+                "HIGH": "High-protein diet",
+              },
+            },
+            "capture_base": "",
+            "language": "en",
+            "type": "spec/overlays/entry/1.0",
+          },
+        ],
+        "entry_code": Array [
+          Object {
+            "attribute_entry_codes": Object {
+              "treatment": Array [
+                "CTRL",
+                "HIGH",
+              ],
+            },
+            "capture_base": "",
+            "language": "en",
+            "type": "spec/overlays/entry_code/1.0",
+          },
+        ],
+        "format": Object {
+          "attribute_formats": Object {
+            "bird_id": "^[A-Z]{2}[0-9]{3}$",
+            "live_weight": "^[-+]?\\\\d*\\\\.?\\\\d+$",
+          },
+          "capture_base": "",
+          "type": "spec/overlays/format/1.0",
+        },
+        "information": Array [
+          Object {
+            "attribute_information": Object {
+              "bird_id": "Bird identifier",
+              "live_weight": "Live weight at slaughter",
+              "treatment": "Feed treatment group",
+            },
+            "capture_base": "",
+            "language": "en",
+            "type": "spec/overlays/information/1.0",
+          },
+        ],
+        "label": Array [
+          Object {
+            "attribute_labels": Object {
+              "bird_id": "Bird ID",
+            },
+            "capture_base": "",
+            "language": "en",
+            "type": "spec/overlays/label/1.0",
+          },
+        ],
+        "meta": Array [
+          Object {
+            "capture_base": "",
+            "description": "Broiler feeding trial",
+            "language": "en",
+            "name": "poultry_trial",
+            "type": "spec/overlays/meta/1.0",
+          },
+        ],
+        "standard": Array [
+          Object {
+            "attr_standards": Object {
+              "bird_id": "http://purl.obolibrary.org/obo/FOODON_00000001",
+            },
+            "capture_base": "",
+            "language": "en",
+            "type": "spec/overlays/standard/1.0",
+          },
+        ],
+        "unit": Object {
+          "attribute_units": Object {
+            "live_weight": "g",
+          },
+          "capture_base": "",
+          "measurement_system": "Metric",
+          "type": "spec/overlays/unit/1.0",
+        },
+      },
+    },
+  },
+  "type": "oca_package/1.0",
+}
+`;
+
+exports[`LinkML translation reports enums referenced but not defined 1`] = `
+Array [
+  "ColourEnum",
+]
+`;
+
+exports[`OCABundle validator honours a comma decimal separator 1`] = `
+OCADataSetErr {
+  "attErr": AttributeErr {
+    "errs": Array [
+      Array [
+        "unexpected_column",
+        "Unmatched attribute (attribute not found in the OCA Bundle).",
+      ],
+    ],
+  },
+  "characterEcodeErr": CharacterEcodeErr {
+    "errs": Object {
+      "bird_id": Object {},
+      "hatch_date": Object {},
+      "live_weight": Object {},
+      "tags": Object {},
+      "treatment": Object {},
+    },
+  },
+  "entryCodeErr": EntryCodeErr {
+    "errs": Object {
+      "tags": Object {
+        "0": Object {
+          "detail": "The following entry(ies): [b]] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+        "1": Object {
+          "detail": "The following entry(ies): [c] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+        "3": Object {
+          "detail": "The following entry(ies): [[z]] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+      },
+      "treatment": Object {
+        "1": Object {
+          "detail": "One of the entry codes is required. Entry codes allowed: [CTRL,HIGH]",
+          "type": "EC",
+        },
+      },
+    },
+  },
+  "errCollection": Object {
+    "0": Object {
+      "hatch_date": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+      "tags": Array [
+        Object {
+          "detail": "The following entry(ies): [b]] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+      ],
+    },
+    "1": Object {
+      "bird_id": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+      "hatch_date": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+      "tags": Array [
+        Object {
+          "detail": "The following entry(ies): [c] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+      ],
+      "treatment": Array [
+        Object {
+          "detail": "One of the entry codes is required. Entry codes allowed: [CTRL,HIGH]",
+          "type": "EC",
+        },
+      ],
+    },
+    "2": Object {
+      "bird_id": Array [
+        Object {
+          "detail": "Missing an entry for a mandatory attribute (check for other missing entries before continuing). Supported format: ^[A-Z]{2}[0-9]{3}$.",
+          "type": "FE",
+        },
+      ],
+      "hatch_date": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+      "live_weight": Array [
+        Object {
+          "detail": "Range mismatch: value is equal to 4000 (non-inclusive)",
+          "type": "RE",
+        },
+      ],
+    },
+    "3": Object {
+      "live_weight": Array [
+        Object {
+          "detail": "Range mismatch: value is smaller than 100",
+          "type": "RE",
+        },
+      ],
+      "tags": Array [
+        Object {
+          "detail": "The following entry(ies): [[z]] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+      ],
+    },
+  },
+  "errCols": Set {
+    "bird_id",
+    "hatch_date",
+    "treatment",
+    "tags",
+    "live_weight",
+  },
+  "errRows": Set {
+    "1",
+    "2",
+    "0",
+    "3",
+  },
+  "formatErr": FormatErr {
+    "errs": Object {
+      "bird_id": Object {
+        "1": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+        "2": Object {
+          "detail": "Missing an entry for a mandatory attribute (check for other missing entries before continuing). Supported format: ^[A-Z]{2}[0-9]{3}$.",
+          "type": "FE",
+        },
+      },
+      "hatch_date": Object {
+        "0": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+        "1": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+        "2": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      },
+      "live_weight": Object {},
+      "tags": Object {},
+      "treatment": Object {},
+    },
+  },
+  "missingAttrs": Set {},
+  "rangeErr": RangeErr {
+    "errs": Object {
+      "live_weight": Object {
+        "2": Object {
+          "detail": "Range mismatch: value is equal to 4000 (non-inclusive)",
+          "type": "RE",
+        },
+        "3": Object {
+          "detail": "Range mismatch: value is smaller than 100",
+          "type": "RE",
+        },
+      },
+    },
+  },
+  "unmachedAttrs": Set {
+    "unexpected_column",
+  },
+  "warningErr": WarningErr {
+    "errs": Object {},
+  },
+}
+`;
+
+exports[`OCABundle validator validates a dataset against format, entry code, conformance and range rules: flagged 1`] = `
+Array [
+  "0",
+]
+`;
+
+exports[`OCABundle validator validates a dataset against format, entry code, conformance and range rules: result 1`] = `
+OCADataSetErr {
+  "attErr": AttributeErr {
+    "errs": Array [
+      Array [
+        "unexpected_column",
+        "Unmatched attribute (attribute not found in the OCA Bundle).",
+      ],
+    ],
+  },
+  "characterEcodeErr": CharacterEcodeErr {
+    "errs": Object {
+      "bird_id": Object {},
+      "hatch_date": Object {},
+      "live_weight": Object {},
+      "tags": Object {},
+      "treatment": Object {},
+    },
+  },
+  "entryCodeErr": EntryCodeErr {
+    "errs": Object {
+      "tags": Object {
+        "0": Object {
+          "detail": "The following entry(ies): [b]] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+        "1": Object {
+          "detail": "The following entry(ies): [c] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+        "3": Object {
+          "detail": "The following entry(ies): [[z]] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+      },
+      "treatment": Object {
+        "1": Object {
+          "detail": "One of the entry codes is required. Entry codes allowed: [CTRL,HIGH]",
+          "type": "EC",
+        },
+      },
+    },
+  },
+  "errCollection": Object {
+    "0": Object {
+      "hatch_date": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+      "tags": Array [
+        Object {
+          "detail": "The following entry(ies): [b]] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+      ],
+    },
+    "1": Object {
+      "bird_id": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+      "hatch_date": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+      "live_weight": Array [
+        Object {
+          "detail": "Range mismatch: value is equal to 4000 (non-inclusive)",
+          "type": "RE",
+        },
+      ],
+      "tags": Array [
+        Object {
+          "detail": "The following entry(ies): [c] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+        Object {
+          "detail": "Warning: Array delimiter in data is \\";\\" but the schema specifies \\",\\".",
+          "type": "W",
+        },
+      ],
+      "treatment": Array [
+        Object {
+          "detail": "One of the entry codes is required. Entry codes allowed: [CTRL,HIGH]",
+          "type": "EC",
+        },
+      ],
+    },
+    "2": Object {
+      "bird_id": Array [
+        Object {
+          "detail": "Missing an entry for a mandatory attribute (check for other missing entries before continuing). Supported format: ^[A-Z]{2}[0-9]{3}$.",
+          "type": "FE",
+        },
+      ],
+      "hatch_date": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+      "live_weight": Array [
+        Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      ],
+    },
+    "3": Object {
+      "live_weight": Array [
+        Object {
+          "detail": "Range mismatch: value is smaller than 100",
+          "type": "RE",
+        },
+      ],
+      "tags": Array [
+        Object {
+          "detail": "The following entry(ies): [[z]] are not part of the Entry codes list. Entry codes allowed: [a,b]",
+          "type": "EC",
+        },
+      ],
+    },
+  },
+  "errCols": Set {
+    "bird_id",
+    "live_weight",
+    "hatch_date",
+    "treatment",
+    "tags",
+  },
+  "errRows": Set {
+    "1",
+    "2",
+    "0",
+    "3",
+  },
+  "formatErr": FormatErr {
+    "errs": Object {
+      "bird_id": Object {
+        "1": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+        "2": Object {
+          "detail": "Missing an entry for a mandatory attribute (check for other missing entries before continuing). Supported format: ^[A-Z]{2}[0-9]{3}$.",
+          "type": "FE",
+        },
+      },
+      "hatch_date": Object {
+        "0": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+        "1": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+        "2": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      },
+      "live_weight": Object {
+        "2": Object {
+          "detail": "Format mismatch.",
+          "type": "FE",
+        },
+      },
+      "tags": Object {},
+      "treatment": Object {},
+    },
+  },
+  "missingAttrs": Set {},
+  "rangeErr": RangeErr {
+    "errs": Object {
+      "live_weight": Object {
+        "1": Object {
+          "detail": "Range mismatch: value is equal to 4000 (non-inclusive)",
+          "type": "RE",
+        },
+        "3": Object {
+          "detail": "Range mismatch: value is smaller than 100",
+          "type": "RE",
+        },
+      },
+    },
+  },
+  "unmachedAttrs": Set {
+    "unexpected_column",
+  },
+  "warningErr": WarningErr {
+    "errs": Object {
+      "tags": Object {
+        "1": Object {
+          "detail": "Warning: Array delimiter in data is \\";\\" but the schema specifies \\",\\".",
+          "type": "W",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`OCAParser parses a LinkML-imported package into editor state 1`] = `
+Object {
+  "arrayDelimiterData": Object {},
+  "attributeCardinality": Object {
+    "sample_dates": "1-3",
+  },
+  "attributeFormats": Object {
+    "bird_id": "^[A-Z]{2}[0-9]{3}$",
+    "live_weight": "^[-+]?\\\\d*\\\\.?\\\\d+$",
+  },
+  "attributeFramingSources": Array [],
+  "attributeRanges": Object {
+    "live_weight": Object {
+      "lower": "0",
+      "lower_inclusive": true,
+      "upper": "5000",
+      "upper_inclusive": true,
+    },
+  },
+  "attributes": Array [
+    Object {
+      "Attribute": "bird_id",
+      "Description": "Bird identifier",
+      "List": false,
+      "OriginalType": "Text",
+      "Required": true,
+      "Sensitive": false,
+      "Type": "Text",
+      "Unit": "",
+    },
+    Object {
+      "Attribute": "live_weight",
+      "Description": "Live weight at slaughter",
+      "List": false,
+      "OriginalType": "Numeric",
+      "Required": false,
+      "Sensitive": false,
+      "Type": "Numeric",
+      "Unit": "g",
+    },
+    Object {
+      "Attribute": "treatment",
+      "Description": "Feed treatment group",
+      "List": true,
+      "OriginalType": "Text",
+      "Required": true,
+      "Sensitive": true,
+      "Type": "Text",
+      "Unit": "",
+    },
+    Object {
+      "Attribute": "sample_dates",
+      "Description": "",
+      "List": false,
+      "OriginalType": "Array[Datetime]",
+      "Required": false,
+      "Sensitive": false,
+      "Type": "Array[DateTime]",
+      "Unit": "",
+    },
+  ],
+  "attributesWithLists": Array [
+    "treatment",
+  ],
+  "characterEncodingData": Object {},
+  "dataStandardsData": Array [],
+  "decimalSeparator": ".",
+  "enableArrayDelimiter": false,
+  "enableDecimalSeparator": false,
+  "enableFileDelimiter": false,
+  "entryCodeFramingSources": Object {},
+  "entryCodes": Object {
+    "treatment": Array [
+      Object {
+        "Code": "CTRL",
+        "English": "Control diet",
+      },
+      Object {
+        "Code": "HIGH",
+        "English": "High-protein diet",
+      },
+    ],
+  },
+  "exampleData": Object {},
+  "formBuilderPages": Array [],
+  "formPlaceholdersByLanguage": Object {},
+  "frameAllUnits": false,
+  "initialized": true,
+  "lanAttributeRowData": Object {
+    "English": Array [
+      Object {
+        "Attribute": "bird_id",
+        "Description": "Bird identifier",
+        "Label": "Bird ID",
+        "List": false,
+      },
+      Object {
+        "Attribute": "live_weight",
+        "Description": "Live weight at slaughter",
+        "Label": "",
+        "List": false,
+      },
+      Object {
+        "Attribute": "treatment",
+        "Description": "Feed treatment group",
+        "Label": "",
+        "List": true,
+      },
+      Object {
+        "Attribute": "sample_dates",
+        "Description": "",
+        "Label": "",
+        "List": false,
+      },
+    ],
+  },
+  "metadata": Object {
+    "classification": null,
+    "languages": Array [
+      "English",
+    ],
+    "localized": Object {
+      "eng": Object {
+        "description": "Broiler feeding trial",
+        "name": "poultry_trial",
+      },
+    },
+  },
+  "overlaySelections": Object {
+    "Attribute Framing": false,
+    "Cardinality": true,
+    "Character Encoding": false,
+    "Data Separator": false,
+    "Data Standards": false,
+    "Examples": false,
+    "Form Information": false,
+    "Format": true,
+    "Range": true,
+    "Required Entry": true,
+    "Unit Framing": true,
+  },
+  "overlays": Object {
+    "cardinality": Object {
+      "attribute_cardinality": Object {
+        "sample_dates": "1-3",
+      },
+      "capture_base": "",
+      "type": "spec/overlays/cardinality/1.0",
+    },
+    "conformance": Object {
+      "attribute_conformance": Object {
+        "bird_id": "M",
+        "live_weight": "O",
+        "sample_dates": "O",
+        "treatment": "M",
+      },
+      "capture_base": "",
+      "type": "spec/overlays/conformance/1.0",
+    },
+    "entry": Array [
+      Object {
+        "attribute_entries": Object {
+          "treatment": Object {
+            "CTRL": "Control diet",
+            "HIGH": "High-protein diet",
+          },
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/entry/1.0",
+      },
+    ],
+    "entry_code": Array [
+      Object {
+        "attribute_entry_codes": Object {
+          "treatment": Array [
+            "CTRL",
+            "HIGH",
+          ],
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/entry_code/1.0",
+      },
+    ],
+    "format": Object {
+      "attribute_formats": Object {
+        "bird_id": "^[A-Z]{2}[0-9]{3}$",
+        "live_weight": "^[-+]?\\\\d*\\\\.?\\\\d+$",
+      },
+      "capture_base": "",
+      "type": "spec/overlays/format/1.0",
+    },
+    "information": Array [
+      Object {
+        "attribute_information": Object {
+          "bird_id": "Bird identifier",
+          "live_weight": "Live weight at slaughter",
+          "treatment": "Feed treatment group",
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/information/1.0",
+      },
+    ],
+    "label": Array [
+      Object {
+        "attribute_labels": Object {
+          "bird_id": "Bird ID",
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/label/1.0",
+      },
+    ],
+    "meta": Array [
+      Object {
+        "capture_base": "",
+        "description": "Broiler feeding trial",
+        "language": "en",
+        "name": "poultry_trial",
+        "type": "spec/overlays/meta/1.0",
+      },
+    ],
+    "standard": Array [
+      Object {
+        "attr_standards": Object {
+          "bird_id": "http://purl.obolibrary.org/obo/FOODON_00000001",
+        },
+        "capture_base": "",
+        "language": "en",
+        "type": "spec/overlays/standard/1.0",
+      },
+    ],
+    "unit": Object {
+      "attribute_units": Object {
+        "live_weight": "g",
+      },
+      "capture_base": "",
+      "measurement_system": "Metric",
+      "type": "spec/overlays/unit/1.0",
+    },
+  },
+  "unframedUnitList": Array [],
+  "unitData": Array [],
+  "unitFramedData": Array [
+    Object {
+      "Attribute": "live_weight",
+      "Description": "Unit of mass",
+      "UCUM Code": "g",
+      "UCUM Label": "gram",
+      "Unit": "g",
+    },
+  ],
+}
+`;
+
+exports[`OCAParser parses the example package into editor state 1`] = `
+Object {
+  "arrayDelimiterData": Object {},
+  "attributeCardinality": Object {},
+  "attributeFormats": Object {},
+  "attributeFramingSources": Array [],
+  "attributeRanges": Object {},
+  "attributes": Array [
+    Object {
+      "Attribute": "Farm",
+      "Description": "Letter assignee a chaque ferme pour identification",
+      "List": false,
+      "OriginalType": "Text",
+      "Required": false,
+      "Sensitive": false,
+      "Type": "Text",
+      "Unit": "",
+    },
+    Object {
+      "Attribute": "Age",
+      "Description": "Age de l'animal compté en jours",
+      "List": false,
+      "OriginalType": "Numeric",
+      "Required": false,
+      "Sensitive": false,
+      "Type": "Numeric",
+      "Unit": "days",
+    },
+    Object {
+      "Attribute": "LiveWt",
+      "Description": "Poids vif à 28 jours en gramme",
+      "List": false,
+      "OriginalType": "Numeric",
+      "Required": false,
+      "Sensitive": false,
+      "Type": "Numeric",
+      "Unit": "g",
+    },
+    Object {
+      "Attribute": "BreastWt",
+      "Description": "Poids de la poitrine en gramme",
+      "List": false,
+      "OriginalType": "Numeric",
+      "Required": false,
+      "Sensitive": false,
+      "Type": "Numeric",
+      "Unit": "g",
+    },
+    Object {
+      "Attribute": "Glucose",
+      "Description": "Concentration de glucose en mmol/L",
+      "List": false,
+      "OriginalType": "Numeric",
+      "Required": false,
+      "Sensitive": false,
+      "Type": "Numeric",
+      "Unit": "mmol/L",
+    },
+    Object {
+      "Attribute": "Lipase",
+      "Description": "Concentration de glucose en U/L",
+      "List": false,
+      "OriginalType": "Numeric",
+      "Required": false,
+      "Sensitive": false,
+      "Type": "Numeric",
+      "Unit": "U/L",
+    },
+  ],
+  "attributesWithLists": Array [],
+  "characterEncodingData": Object {},
+  "dataStandardsData": Array [],
+  "decimalSeparator": ".",
+  "enableArrayDelimiter": false,
+  "enableDecimalSeparator": false,
+  "enableFileDelimiter": false,
+  "entryCodeFramingSources": Object {},
+  "entryCodes": Object {},
+  "exampleData": Object {},
+  "formBuilderPages": Array [],
+  "formPlaceholdersByLanguage": Object {},
+  "frameAllUnits": false,
+  "initialized": true,
+  "lanAttributeRowData": Object {
+    "English": Array [
+      Object {
+        "Attribute": "Farm",
+        "Description": "a letter given to the farm for identification",
+        "Label": "Farm Letter Indentifier",
+        "List": false,
+      },
+      Object {
+        "Attribute": "Age",
+        "Description": "age of bird in days",
+        "Label": "Bird Age",
+        "List": false,
+      },
+      Object {
+        "Attribute": "LiveWt",
+        "Description": "weight in grams at 28 days",
+        "Label": "Live Weight",
+        "List": false,
+      },
+      Object {
+        "Attribute": "BreastWt",
+        "Description": "Breast weight in grams",
+        "Label": "Breast Weight",
+        "List": false,
+      },
+      Object {
+        "Attribute": "Glucose",
+        "Description": "glucose content in mmol/L",
+        "Label": "Glucose Concentration",
+        "List": false,
+      },
+      Object {
+        "Attribute": "Lipase",
+        "Description": "lipase content in U/L",
+        "Label": "Lipase Content",
+        "List": false,
+      },
+    ],
+    "French": Array [
+      Object {
+        "Attribute": "Farm",
+        "Description": "Letter assignee a chaque ferme pour identification",
+        "Label": "Lettre itenditifant la ferme",
+        "List": false,
+      },
+      Object {
+        "Attribute": "Age",
+        "Description": "Age de l'animal compté en jours",
+        "Label": "Age de l'animal",
+        "List": false,
+      },
+      Object {
+        "Attribute": "LiveWt",
+        "Description": "Poids vif à 28 jours en gramme",
+        "Label": "Poids vif",
+        "List": false,
+      },
+      Object {
+        "Attribute": "BreastWt",
+        "Description": "Poids de la poitrine en gramme",
+        "Label": "Poids de la poitrine",
+        "List": false,
+      },
+      Object {
+        "Attribute": "Glucose",
+        "Description": "Concentration de glucose en mmol/L",
+        "Label": "Concentration de glucose",
+        "List": false,
+      },
+      Object {
+        "Attribute": "Lipase",
+        "Description": "Concentration de glucose en U/L",
+        "Label": "Concentration de lipase",
+        "List": false,
+      },
+    ],
+  },
+  "metadata": Object {
+    "classification": "RDF401",
+    "languages": Array [
+      "English",
+      "French",
+    ],
+    "localized": Object {
+      "eng": Object {
+        "description": "Measurements of chicken gut health",
+        "name": "Chicken gut health",
+      },
+      "fra": Object {
+        "description": "Mesures de la santée intestinale des poulets",
+        "name": "santée intestinale des poulets",
+      },
+    },
+  },
+  "overlaySelections": Object {
+    "Attribute Framing": false,
+    "Cardinality": false,
+    "Character Encoding": false,
+    "Data Separator": false,
+    "Data Standards": false,
+    "Examples": false,
+    "Form Information": false,
+    "Format": false,
+    "Range": false,
+    "Required Entry": false,
+    "Unit Framing": false,
+  },
+  "overlays": Object {
+    "information": Array [
+      Object {
+        "attribute_information": Object {
+          "Age": "age of bird in days",
+          "BreastWt": "Breast weight in grams",
+          "Farm": "a letter given to the farm for identification",
+          "Glucose": "glucose content in mmol/L",
+          "Lipase": "lipase content in U/L",
+          "LiveWt": "weight in grams at 28 days",
+        },
+        "capture_base": "EImf4Cm1bUr8uPZ76DgFWXlT54_ntRf4bDYarXsyyytV",
+        "d": "ECAG9trAWl-3GEewwXdbjDlCQpC67MdM0ccEgdGY0PpI",
+        "language": "eng",
+        "type": "spec/overlays/information/1.1",
+      },
+      Object {
+        "attribute_information": Object {
+          "Age": "Age de l'animal compté en jours",
+          "BreastWt": "Poids de la poitrine en gramme",
+          "Farm": "Letter assignee a chaque ferme pour identification",
+          "Glucose": "Concentration de glucose en mmol/L",
+          "Lipase": "Concentration de glucose en U/L",
+          "LiveWt": "Poids vif à 28 jours en gramme",
+        },
+        "capture_base": "EImf4Cm1bUr8uPZ76DgFWXlT54_ntRf4bDYarXsyyytV",
+        "d": "EN-OXXKXBEc6Chhxh5oWbhnIc-iB99smaXUrQpfziEdY",
+        "language": "fra",
+        "type": "spec/overlays/information/1.1",
+      },
+    ],
+    "label": Array [
+      Object {
+        "attribute_categories": Array [],
+        "attribute_labels": Object {
+          "Age": "Age de l'animal",
+          "BreastWt": "Poids de la poitrine",
+          "Farm": "Lettre itenditifant la ferme",
+          "Glucose": "Concentration de glucose",
+          "Lipase": "Concentration de lipase",
+          "LiveWt": "Poids vif",
+        },
+        "capture_base": "EImf4Cm1bUr8uPZ76DgFWXlT54_ntRf4bDYarXsyyytV",
+        "category_labels": Object {},
+        "d": "EITT7CEj1IJxzHioJ00k1626_SkFwTS5V0wA9k68WHaS",
+        "language": "fra",
+        "type": "spec/overlays/label/1.1",
+      },
+      Object {
+        "attribute_categories": Array [],
+        "attribute_labels": Object {
+          "Age": "Bird Age",
+          "BreastWt": "Breast Weight",
+          "Farm": "Farm Letter Indentifier",
+          "Glucose": "Glucose Concentration",
+          "Lipase": "Lipase Content",
+          "LiveWt": "Live Weight",
+        },
+        "capture_base": "EImf4Cm1bUr8uPZ76DgFWXlT54_ntRf4bDYarXsyyytV",
+        "category_labels": Object {},
+        "d": "EI_5RlJlA29yZ0DEtldNCqvIyj_LTM8pJT8eXeBkBYnV",
+        "language": "eng",
+        "type": "spec/overlays/label/1.1",
+      },
+    ],
+    "meta": Array [
+      Object {
+        "capture_base": "EImf4Cm1bUr8uPZ76DgFWXlT54_ntRf4bDYarXsyyytV",
+        "d": "EIkuzoyHMfhpu80fccB6uqdGQEthzKEEcI4zzbih2vxJ",
+        "description": "Mesures de la santée intestinale des poulets",
+        "language": "fra",
+        "name": "santée intestinale des poulets",
+        "type": "spec/overlays/meta/1.1",
+      },
+      Object {
+        "capture_base": "EImf4Cm1bUr8uPZ76DgFWXlT54_ntRf4bDYarXsyyytV",
+        "d": "EJJQlyGWFYXouCsd4NlJhKgT6EE6Sd7yQlgjkNJRzG1O",
+        "description": "Measurements of chicken gut health",
+        "language": "eng",
+        "name": "Chicken gut health",
+        "type": "spec/overlays/meta/1.1",
+      },
+    ],
+    "unit": Object {
+      "attribute_unit": Object {
+        "Age": "days",
+        "BreastWt": "g",
+        "Glucose": "mmol/L",
+        "Lipase": "U/L",
+        "LiveWt": "g",
+      },
+      "capture_base": "EImf4Cm1bUr8uPZ76DgFWXlT54_ntRf4bDYarXsyyytV",
+      "d": "ELkmj4EhALi-owVaRQGdMamCKAZJ5C1F17NIC8NRaM1Q",
+      "type": "spec/overlays/unit/1.1",
+    },
+  },
+  "unframedUnitList": Array [],
+  "unitData": Array [],
+  "unitFramedData": Array [
+    Object {
+      "Attribute": "Age",
+      "Description": "",
+      "UCUM Code": "",
+      "UCUM Label": "",
+      "Unit": "days",
+    },
+    Object {
+      "Attribute": "BreastWt",
+      "Description": "",
+      "UCUM Code": "",
+      "UCUM Label": "",
+      "Unit": "g",
+    },
+    Object {
+      "Attribute": "Glucose",
+      "Description": "",
+      "UCUM Code": "",
+      "UCUM Label": "",
+      "Unit": "mmol/L",
+    },
+    Object {
+      "Attribute": "Lipase",
+      "Description": "",
+      "UCUM Code": "",
+      "UCUM Label": "",
+      "Unit": "U/L",
+    },
+    Object {
+      "Attribute": "LiveWt",
+      "Description": "",
+      "UCUM Code": "",
+      "UCUM Label": "",
+      "Unit": "g",
+    },
+  ],
+}
+`;
+
+exports[`UCUM unit search searchUnits("degree") 1`] = `
+Object {
+  "firstMatch": "[degRe]",
+  "results": Array [
+    "[degRe]",
+    "Cel",
+    "[degF]",
+    "[degR]",
+    "K",
+    "deg",
+    "deg/s",
+    "K/W",
+    "cal_[15]",
+    "%{lysis}",
+    "%{blockade}",
+    "[Btu_39]",
+    "[Btu_59]",
+    "[Btu_60]",
+    "%{hemolysis}",
+    "[iU]/L{37Cel}",
+    "{rel_saturation}",
+  ],
+}
+`;
+
+exports[`UCUM unit search searchUnits("g") 1`] = `
+Object {
+  "firstMatch": "g",
+  "results": Array [
+    "g",
+  ],
+}
+`;
+
+exports[`UCUM unit search searchUnits("kg") 1`] = `
+Object {
+  "firstMatch": "kg",
+  "results": Array [
+    "kg",
+  ],
+}
+`;
+
+exports[`UCUM unit search searchUnits("kilogram") 1`] = `
+Object {
+  "firstMatch": "kg",
+  "results": Array [
+    "kg",
+    "kg/har",
+    "kg/L",
+    "kg/h",
+    "kg/min",
+    "kg/mol",
+    "kg/s",
+    "kg.m/s",
+    "kg/m2",
+    "kg/m3",
+    "kg/(s.m2)",
+    "/kg",
+    "kat/kg",
+    "10*6/kg",
+    "osm/kg",
+    "/kg{body_wt}",
+    "g/kg",
+    "mol/kg",
+    "pg",
+    "L/kg",
+  ],
+}
+`;
+
+exports[`UCUM unit search searchUnits("mg/dL") 1`] = `
+Object {
+  "firstMatch": "mg/dL",
+  "results": Array [
+    "mg/dL",
+  ],
+}
+`;
+
+exports[`attribute name sanitising rewrites disallowed characters in bundle attribute keys 1`] = `
+Object {
+  "capture_base": Object {
+    "attributes": Object {
+      "Bird_ID": "Text",
+      "wt_g": "Numeric",
+    },
+  },
+  "overlays": Object {
+    "format": Object {
+      "attribute_formats": Object {
+        "wt_g": "^[0-9]+$",
+      },
+    },
+    "label": Array [
+      Object {
+        "attribute_labels": Object {
+          "Bird_ID": "Bird",
+          "wt_g": "Weight",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`example validation flags example values that break format, range and delimiter rules 1`] = `
+Array [
+  Object {
+    "attribute": "live_weight",
+    "language": "English",
+    "messageKey": "is below the lower bound {{bound}}",
+    "params": Object {
+      "bound": 100,
+    },
+    "type": "range",
+    "value": "50",
+  },
+  Object {
+    "attribute": "hatch_date",
+    "language": "English",
+    "messageKey": "does not match the expected format ({{format}})",
+    "params": Object {
+      "format": "YYYY-MM-DD",
+      "formatIsDescription": false,
+    },
+    "type": "format",
+    "value": "2024-13-01",
+  },
+  Object {
+    "attribute": "tags",
+    "language": "English",
+    "messageKey": "uses the array delimiter \\"{{found}}\\" but the schema expects \\"{{separator}}\\"",
+    "params": Object {
+      "found": ";",
+      "separator": ",",
+    },
+    "type": "array",
+    "value": "a;b",
+  },
+]
+`;
+
+exports[`legacy zip import reads meta.json, capture base and overlays from a zip archive 1`] = `
+Object {
+  "allZipFiles": Array [
+    "{\\"root\\":\\"cb1\\",\\"files\\":{\\"cb1\\":{\\"meta (en)\\":\\"m1\\",\\"label (en)\\":\\"l1\\",\\"format\\":\\"f1\\"}}}",
+    "{\\"type\\":\\"spec/capture_base/1.0\\",\\"attributes\\":{\\"Bird_ID\\":\\"Text\\",\\"weight\\":\\"Numeric\\"}}",
+    "{\\"type\\":\\"spec/overlays/meta/1.0\\",\\"name\\":\\"Trial\\"}",
+    "{\\"type\\":\\"spec/overlays/label/1.0\\",\\"attribute_labels\\":{\\"Bird_ID\\":\\"Bird\\",\\"weight\\":\\"Weight\\"}}",
+    "{\\"type\\":\\"spec/overlays/format/1.0\\",\\"attribute_formats\\":{\\"weight\\":\\"^[0-9]+$\\"}}",
+  ],
+  "captureBase": Object {
+    "attributes": Object {
+      "Bird_ID": "Text",
+      "weight": "Numeric",
+    },
+    "type": "spec/capture_base/1.0",
+  },
+  "ocaPackage": Object {
+    "__composerImportSource": "zip",
+    "oca_bundle": Object {
+      "bundle": Object {
+        "capture_base": Object {
+          "attributes": Object {
+            "Bird_ID": "Text",
+            "weight": "Numeric",
+          },
+          "type": "spec/capture_base/1.0",
+        },
+        "d": "cb1",
+        "overlays": Object {
+          "format": Object {
+            "attribute_formats": Object {
+              "weight": "^[0-9]+$",
+            },
+            "type": "spec/overlays/format/1.0",
+          },
+          "label": Array [
+            Object {
+              "attribute_labels": Object {
+                "Bird_ID": "Bird",
+                "weight": "Weight",
+              },
+              "type": "spec/overlays/label/1.0",
+            },
+          ],
+          "meta": Array [
+            Object {
+              "name": "Trial",
+              "type": "spec/overlays/meta/1.0",
+            },
+          ],
+        },
+      },
+      "d": "cb1",
+    },
+  },
+  "root": "cb1",
+}
+`;
+
+exports[`package utilities read bundle, id and languages from the example package 1`] = `
+Object {
+  "bundleId": "EIHGftZS12RzGZiDezhxmmElUi2CRT2VFgTLQCmGPrXS",
+  "captureBase": Object {
+    "attributes": Object {
+      "Age": "Numeric",
+      "BreastWt": "Numeric",
+      "Farm": "Text",
+      "Glucose": "Numeric",
+      "Lipase": "Numeric",
+      "LiveWt": "Numeric",
+    },
+    "classification": "RDF401",
+    "d": "EImf4Cm1bUr8uPZ76DgFWXlT54_ntRf4bDYarXsyyytV",
+    "flagged_attributes": Array [],
+    "type": "spec/capture_base/1.1",
+  },
+  "languages": Array [
+    "French",
+    "English",
+  ],
+}
+`;

@@ -1,0 +1,5 @@
+bird_id,live_weight,treatment,hatch_date,farmer_name,tags,notes
+AB123,2500,CTRL,2024-01-15,Alice,a;b,first bird
+ab123,4000,LOW,2024-13-01,Bob,a,
+,abc,HIGH,2024-02-10,Christopher,a,missing id
+CD456,50,,2024-03-01,Dan,"a,b",

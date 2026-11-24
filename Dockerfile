@@ -13,6 +13,7 @@ WORKDIR /app
 
 # Install dependencies first (better caching)
 COPY package.json package-lock.json ./
+COPY packages/oca-core/package.json packages/oca-core/
 RUN npm ci
 
 # Copy the rest of the source code

@@ -1,6 +1,10 @@
 import i18next from "i18next";
-import Fuse from "fuse.js";
-import { DateTime, Duration } from "luxon";
+import {
+  escapeForOCADoubleQuotedValue,
+  escapeForOCAString,
+  escapeFormatRuleForOCA,
+  normalizeEscapedQuotes
+} from "@oca-composer/oca-core/src/utils/escaping";
 import {
   langCodeOCAFromName,
   langNameFromTwoLetters,
@@ -9,7 +13,6 @@ import {
 import {
   ADC,
   CUSTOM_FORMAT_RULE,
-  customDateFormatParsers,
   DEFAULT_LANGUAGE,
   ENTRY_CODE_FRAMING,
   FIELD_CARDINALITY_OVERLAY,
@@ -18,10 +21,6 @@ import {
   FIELD_RANGE_OVERLAY,
   isFormatEligibleAttributeType,
   isRangeEligibleAttributeType,
-  formatCodeBinaryDescription,
-  formatCodeDateDescription,
-  formatCodeNumericDescription,
-  formatCodeTextDescription,
   OCA_REPOSITORY_API_URL,
   RANGE,
   SSSOM_MAPPER_API_URL
@@ -31,8 +30,13 @@ import {
   buildFormOverlayInteraction,
   convertToFormInformationOverlay
 } from "../Overlays/FormBuilder/utils/convertToFormInformation";
-import ucumUnits from "../constants/ucumUnits";
 import { getRootCaptureBaseId } from "./packageUtils";
+
+export * from "@oca-composer/oca-core/src/utils/attributeNames";
+export * from "@oca-composer/oca-core/src/utils/escaping";
+export * from "@oca-composer/oca-core/src/utils/formatRules";
+export * from "@oca-composer/oca-core/src/utils/values";
+export { searchUnits } from "@oca-composer/oca-core/src/utils/units";
 
 export const translateDataType = (type, t = null) => {
   if (!type || !t) return type;
@@ -99,227 +103,6 @@ export const getDescriptiveFileName = (schemaNameOrDescription, commonFileName) 
 
   const fileName = `${schemaName ? `${schemaName.split(" ")[0]}_` : ""}${commonFileName}`;
   return fileName;
-};
-
-// Helper function to replace specified characters in object keys
-export const replaceCharsInKeys = (obj, replacement = "_") => {
-  if (!obj) return obj;
-
-  // Pattern matches anything that IS NOT a letter, number, underscore, hyphen, or period
-  const pattern = /[^a-zA-Z0-9_\-.]+/g;
-
-  const cleanString = (str) => {
-    // Replace consecutive special chars with a single replacement character
-    let result = str.replace(pattern, replacement);
-    // Remove replacement character from the end if present
-    result = result.replace(new RegExp(`${replacement}+$`), "");
-    return result;
-  };
-
-  // If it's an array of strings
-  if (Array.isArray(obj)) {
-    return obj.map(cleanString);
-  }
-
-  // If it's an object with attribute names as keys
-  const converted = {};
-  Object.entries(obj).forEach(([key, value]) => {
-    const newKey = cleanString(key);
-    converted[newKey] = value;
-  });
-  return converted;
-};
-
-export const hasDisallowedChars = (str) => /[^a-zA-Z0-9_\-.]/.test(str);
-
-export const collectInvalidAttributeNames = (names) => {
-  const invalidNames = [];
-  names.forEach((name) => {
-    const trimmed = typeof name === "string" ? name.trim().replace(/\s+/g, " ") : name;
-    if (trimmed && hasDisallowedChars(trimmed) && !invalidNames.includes(name)) {
-      invalidNames.push(name);
-    }
-  });
-  return invalidNames;
-};
-
-// Sanitize attributes in JSON string from ZIP schema upload
-export const replaceAttributeCharsInJsonString = (jsonString, parsed = false) => {
-  const parsedJson = JSON.parse(jsonString);
-
-  if (parsedJson.type) {
-    if (parsedJson.type.includes("capture_base")) {
-      if (parsedJson.attributes) {
-        parsedJson.attributes = replaceCharsInKeys(parsedJson.attributes);
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "cardinality") {
-      if (parsedJson.attribute_cardinality) {
-        parsedJson.attribute_cardinality = replaceCharsInKeys(
-          parsedJson.attribute_cardinality
-        );
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "character_encoding") {
-      if (parsedJson.attribute_character_encoding) {
-        parsedJson.attribute_character_encoding = replaceCharsInKeys(
-          parsedJson.attribute_character_encoding
-        );
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "conformance") {
-      if (parsedJson.attribute_conformance) {
-        parsedJson.attribute_conformance = replaceCharsInKeys(
-          parsedJson.attribute_conformance
-        );
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "entry") {
-      if (parsedJson.attribute_entries) {
-        parsedJson.attribute_entries = replaceCharsInKeys(parsedJson.attribute_entries);
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "entry_code") {
-      if (parsedJson.attribute_entry_codes) {
-        parsedJson.attribute_entry_codes = replaceCharsInKeys(
-          parsedJson.attribute_entry_codes
-        );
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "format") {
-      if (parsedJson.attribute_formats) {
-        parsedJson.attribute_formats = replaceCharsInKeys(parsedJson.attribute_formats);
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "information") {
-      if (parsedJson.attribute_information) {
-        parsedJson.attribute_information = replaceCharsInKeys(
-          parsedJson.attribute_information
-        );
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "label") {
-      if (parsedJson.attribute_labels) {
-        parsedJson.attribute_labels = replaceCharsInKeys(parsedJson.attribute_labels);
-      }
-    }
-
-    if (parsedJson.type.split("/")[2] === "unit") {
-      if (parsedJson.attribute_units) {
-        parsedJson.attribute_units = replaceCharsInKeys(parsedJson.attribute_units);
-      } else if (parsedJson.attribute_unit) {
-        parsedJson.attribute_unit = replaceCharsInKeys(parsedJson.attribute_unit);
-      }
-    }
-  }
-
-  return parsed ? parsedJson : JSON.stringify(parsedJson);
-};
-
-// Sanitize attributes in parsed JSON from JSON schema upload
-export const replaceAttributeCharsInParsedJson = (parsedJson) => {
-  const modifiedParsedJson = JSON.parse(JSON.stringify(parsedJson));
-  if (modifiedParsedJson?.capture_base?.attributes) {
-    modifiedParsedJson.capture_base.attributes = replaceCharsInKeys(
-      modifiedParsedJson.capture_base.attributes
-    );
-  }
-
-  if (modifiedParsedJson?.overlays?.cardinality?.attribute_cardinality) {
-    modifiedParsedJson.overlays.cardinality.attribute_cardinality = replaceCharsInKeys(
-      modifiedParsedJson.overlays.cardinality.attribute_cardinality
-    );
-  }
-
-  if (modifiedParsedJson?.overlays?.character_encoding?.attribute_character_encoding) {
-    modifiedParsedJson.overlays.character_encoding.attribute_character_encoding =
-      replaceCharsInKeys(
-        modifiedParsedJson.overlays.character_encoding.attribute_character_encoding
-      );
-  }
-
-  if (modifiedParsedJson?.overlays?.conformance?.attribute_conformance) {
-    modifiedParsedJson.overlays.conformance.attribute_conformance = replaceCharsInKeys(
-      modifiedParsedJson.overlays.conformance.attribute_conformance
-    );
-  }
-
-  // In case of JSON schema upload, entry overlay is an array of objects
-  if (modifiedParsedJson?.overlays?.entry) {
-    if (Array.isArray(modifiedParsedJson.overlays.entry)) {
-      modifiedParsedJson.overlays.entry.forEach((entryItem) => {
-        if (entryItem.attribute_entries) {
-          entryItem.attribute_entries = replaceCharsInKeys(entryItem.attribute_entries);
-        }
-      });
-    } else if (modifiedParsedJson.overlays.entry.attribute_entries) {
-      modifiedParsedJson.overlays.entry.attribute_entries = replaceCharsInKeys(
-        modifiedParsedJson.overlays.entry.attribute_entries
-      );
-    }
-  }
-
-  if (modifiedParsedJson?.overlays?.entry_code?.attribute_entry_codes) {
-    modifiedParsedJson.overlays.entry_code.attribute_entry_codes = replaceCharsInKeys(
-      modifiedParsedJson.overlays.entry_code.attribute_entry_codes
-    );
-  }
-
-  if (modifiedParsedJson?.overlays?.format?.attribute_formats) {
-    modifiedParsedJson.overlays.format.attribute_formats = replaceCharsInKeys(
-      modifiedParsedJson.overlays.format.attribute_formats
-    );
-  }
-
-  // In case of JSON schema upload, information overlay is an array of objects
-  if (modifiedParsedJson?.overlays?.information) {
-    if (Array.isArray(modifiedParsedJson.overlays.information)) {
-      modifiedParsedJson.overlays.information.forEach((info) => {
-        if (info.attribute_information) {
-          info.attribute_information = replaceCharsInKeys(info.attribute_information);
-        }
-      });
-    } else if (modifiedParsedJson.overlays.information.attribute_information) {
-      modifiedParsedJson.overlays.information.attribute_information = replaceCharsInKeys(
-        modifiedParsedJson.overlays.information.attribute_information
-      );
-    }
-  }
-
-  // In case of JSON schema upload, label overlay is an array of objects
-  if (modifiedParsedJson?.overlays?.label) {
-    if (Array.isArray(modifiedParsedJson.overlays.label)) {
-      modifiedParsedJson.overlays.label.forEach((labelItem) => {
-        if (labelItem.attribute_labels) {
-          labelItem.attribute_labels = replaceCharsInKeys(labelItem.attribute_labels);
-        }
-      });
-    } else if (modifiedParsedJson.overlays.label.attribute_labels) {
-      modifiedParsedJson.overlays.label.attribute_labels = replaceCharsInKeys(
-        modifiedParsedJson.overlays.label.attribute_labels
-      );
-    }
-  }
-
-  if (modifiedParsedJson?.overlays?.unit?.attribute_units) {
-    modifiedParsedJson.overlays.unit.attribute_units = replaceCharsInKeys(
-      modifiedParsedJson.overlays.unit.attribute_units
-    );
-  } else if (modifiedParsedJson.overlays.unit?.attribute_unit) {
-    modifiedParsedJson.overlays.unit.attribute_unit = replaceCharsInKeys(
-      modifiedParsedJson.overlays.unit.attribute_unit
-    );
-  }
-
-  return modifiedParsedJson;
 };
 
 export const getOrderedAttributeRowData = (attributeRowData, attributeOrdering) => {
@@ -468,73 +251,6 @@ export const getUnitFramingInput = (unitFramingRowData) => {
     };
   }
   return unitFramingInput;
-};
-
-export const options = {
-  keys: ["code", "label", "description"],
-  isCaseSensitive: true,
-  includeScore: true,
-  includeMatches: true,
-  minMatchCharLength: 1,
-  shouldSort: true,
-  threshold: 0.4,
-  distance: 100
-};
-
-let _fuseInstance = null;
-const getFuseInstance = () => {
-  if (!_fuseInstance) {
-    _fuseInstance = new Fuse(ucumUnits, options);
-  }
-  return _fuseInstance;
-};
-
-let _ucumCodeMap = null;
-const getUcumCodeMap = () => {
-  if (!_ucumCodeMap) {
-    _ucumCodeMap = new Map();
-    for (const u of ucumUnits) {
-      if (u?.code && !_ucumCodeMap.has(u.code)) {
-        _ucumCodeMap.set(u.code, u);
-      }
-    }
-  }
-  return _ucumCodeMap;
-};
-
-const _searchCache = new Map();
-const SEARCH_CACHE_LIMIT = 200;
-
-export const searchUnits = (unit) => {
-  if (!unit) return { firstMatch: null, results: [] };
-
-  if (_searchCache.has(unit)) {
-    return _searchCache.get(unit);
-  }
-
-  const exact = getUcumCodeMap().get(unit);
-  if (exact) {
-    const result = { firstMatch: exact, results: [exact] };
-    if (_searchCache.size >= SEARCH_CACHE_LIMIT) _searchCache.clear();
-    _searchCache.set(unit, result);
-    return result;
-  }
-
-  const fuse = getFuseInstance();
-  const searchResults = fuse.search(unit);
-  const slicedResults = searchResults.slice(0, 20).map((result) => result.item);
-
-  const uniqueResults = Array.from(new Set(slicedResults.map((item) => item.code))).map(
-    (code) => slicedResults.find((item) => item.code === code)
-  );
-
-  const result = {
-    firstMatch: uniqueResults[0] || null,
-    results: uniqueResults
-  };
-  if (_searchCache.size >= SEARCH_CACHE_LIMIT) _searchCache.clear();
-  _searchCache.set(unit, result);
-  return result;
 };
 
 export const getAttributeFramingInput = (
@@ -1190,53 +906,6 @@ export const getLabelofParentClass = async (uri) => {
   return responseData;
 };
 
-/**
- * Strips generic string escaping.
- * WARNING: DO NOT use this on Format Rules or regular expressions.
- * It will strip backslashes (e.g., \- becomes -) and corrupt the regex.
- */
-export const normalizeEscapedQuotes = (s) => {
-  if (typeof s !== "string") return s;
-  return (
-    s
-      .replace(/\\-/g, "-")
-      .replace(/\\'/g, "'")
-      // eslint-disable-next-line quotes
-      .replace(/\\"/g, '"')
-      .replace(/\\\\/g, "\\")
-  );
-};
-
-export const escapeForOCAString = (s) => {
-  if (typeof s !== "string") return s;
-  // First escape backslashes, then escape double quotes, single quotes, and dashes for OCA output
-  return (
-    String(s)
-      .replace(/\\/g, "\\\\")
-      // eslint-disable-next-line quotes
-      .replace(/"/g, '\\"')
-      .replace(/'/g, "\\'")
-      .replace(/-/g, "\\-")
-  );
-};
-
-export const escapeForOCADoubleQuotedValue = (s) => {
-  if (typeof s !== "string") return s;
-  // eslint-disable-next-line quotes
-  return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-};
-
-/**
- * Safely escapes double quotes for OCA export while preserving regex-specific backslashes.
- * Format rules are often regular expressions, so we CANNOT use `escapeForOCAString`
- * or `normalizeEscapedQuotes` which would destroy regex escapes like \- or \d.
- */
-export const escapeFormatRuleForOCA = (formatRule) => {
-  if (typeof formatRule !== "string") return formatRule;
-  // eslint-disable-next-line quotes
-  return formatRule.replace(/\\"/g, '"').replace(/"/g, '\\"');
-};
-
 export const generateOCAFileFromMergedOverlays = (coreOverlays) => {
   const attributes = Object.keys(coreOverlays.capture_base.attributes);
   const attributeTypeMap = coreOverlays.capture_base.attributes;
@@ -1457,35 +1126,6 @@ export const downloadJsonFile = (data, fileName) => {
   URL.revokeObjectURL(url);
 };
 
-export const getFormatRuleDescription = (attributeType, formatRule, t = null) => {
-  if (!formatRule) return "";
-  // Unescape backslash-escaped quotes to match against our clear-text dictionary keys.
-  // We don't use 'normalizeEscapedQuotes' here to avoid destructive removal of regex metadata like \-.
-  // eslint-disable-next-line quotes
-  const normalizedRule = formatRule.replace(/\\"/g, '"');
-
-  // Extract the underlying data type, stripping away "Array[]" wrappers if present.
-  // e.g. "Array[Text]" becomes "Text".
-  const baseType = attributeType?.includes("Array")
-    ? attributeType.replace(/Array\[|\]/g, "")
-    : attributeType || "";
-
-  const description = baseType.includes("Date")
-    ? formatCodeDateDescription[normalizedRule]
-    : baseType.includes("Numeric")
-      ? formatCodeNumericDescription[normalizedRule]
-      : baseType.includes("Binary")
-        ? formatCodeBinaryDescription[normalizedRule]
-        : baseType.includes("Text") || baseType === "Text"
-          ? formatCodeTextDescription[normalizedRule]
-          : "";
-
-  if (description && t) {
-    return t(description, { defaultValue: description });
-  }
-  return description;
-};
-
 export const shouldDisableRangeOverlay = (
   overlayKey,
   selectedKeys,
@@ -1634,25 +1274,6 @@ export const getOverlayAddDisabledReason = (
 };
 
 export const toMegabytes = (bytes) => (bytes / (1024 * 1024)).toFixed();
-export const isValidNumber = (value) => !Number.isNaN(Number.parseFloat(value));
-
-export const parseDateString = (str) => {
-  let result;
-  // Custom parser is needed for non ISO 8601 formats
-  const customParser = customDateFormatParsers.find((parser) => parser.regex.test(str));
-
-  if (customParser) {
-    result = customParser.parse(str);
-  } else if (str.startsWith("P")) {
-    result = Duration.fromISO(str);
-  } else {
-    result = DateTime.fromISO(str);
-  }
-
-  if (result.isValid) return result;
-  return null;
-};
-
 export const isMultiLevelSchema = (attributeTypeMap) => {
   const types = Object.values(attributeTypeMap);
   if (types.length === 0) return false;
