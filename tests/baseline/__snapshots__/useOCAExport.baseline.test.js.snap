@@ -1,0 +1,467 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`useOCAExport imported export baseline examplePackage: DSL and exported package: dsl 1`] = `
+Array [
+  "# add attributes (capture base)
+ADD ATTRIBUTE Farm=Text Age=Numeric LiveWt=Numeric BreastWt=Numeric Glucose=Numeric Lipase=Numeric
+# Add classification
+ADD classification RDF401
+# Add meta overlay
+ADD Meta en PROPS name=\\"Chicken gut health\\" description=\\"Measurements of chicken gut health\\"
+ADD Meta fr PROPS name=\\"santée intestinale des poulets\\" description=\\"Mesures de la santée intestinale des poulets\\"
+# Add Format Overlay
+# Add Conformance Overlay
+# Add Cardinality Overlay
+# Add label overlay
+ADD Label en ATTRS Farm=\\"Farm Letter Indentifier\\" Age=\\"Bird Age\\" LiveWt=\\"Live Weight\\" BreastWt=\\"Breast Weight\\" Glucose=\\"Glucose Concentration\\" Lipase=\\"Lipase Content\\"
+ADD Label fr ATTRS Farm=\\"Lettre itenditifant la ferme\\" Age=\\"Age de l'animal\\" LiveWt=\\"Poids vif\\" BreastWt=\\"Poids de la poitrine\\" Glucose=\\"Concentration de glucose\\" Lipase=\\"Concentration de lipase\\"
+# Add information overlay
+ADD Information en ATTRS Farm=\\"a letter given to the farm for identification\\" Age=\\"age of bird in days\\" LiveWt=\\"weight in grams at 28 days\\" BreastWt=\\"Breast weight in grams\\" Glucose=\\"glucose content in mmol/L\\" Lipase=\\"lipase content in U/L\\"
+ADD Information fr ATTRS Farm=\\"Letter assignee a chaque ferme pour identification\\" Age=\\"Age de l'animal compté en jours\\" LiveWt=\\"Poids vif à 28 jours en gramme\\" BreastWt=\\"Poids de la poitrine en gramme\\" Glucose=\\"Concentration de glucose en mmol/L\\" Lipase=\\"Concentration de glucose en U/L\\"
+# Add entry code overlay
+
+# Add units overlay
+ADD Unit ATTRS Age=\\"days\\" LiveWt=\\"g\\" BreastWt=\\"g\\" Glucose=\\"mmol/L\\" Lipase=\\"U/L\\"
+# Add character encoding overlay
+",
+]
+`;
+
+exports[`useOCAExport imported export baseline examplePackage: DSL and exported package: package 1`] = `
+Object {
+  "d": "EMqSepH5HFvQYm50DnrQHtqdtD8T9o8IJY4JMWiPuFCH",
+  "extensions": Object {
+    "adc": Object {
+      "EjhmGigwQ3_WyJfuVlGeBRBmf8nabqbfa1B62BVFjYmM": Object {
+        "d": "EDVkloXAb3IulYyhWgGKmwRmU6hXyGlHvnqRzVxSmueX",
+        "overlays": Object {
+          "ordering": Object {
+            "attribute_ordering": Array [
+              "Farm",
+              "Age",
+              "LiveWt",
+              "BreastWt",
+              "Glucose",
+              "Lipase",
+            ],
+            "capture_base": "EjhmGigwQ3_WyJfuVlGeBRBmf8nabqbfa1B62BVFjYmM",
+            "d": "EKOSqe4NF05lXq3N-pTurhx-7E0fWbyuzaVEtENFh2Na",
+            "entry_code_ordering": Object {},
+            "type": "community/overlays/adc/ordering/1.0",
+          },
+        },
+        "type": "community/adc/extension/1.0",
+      },
+    },
+  },
+  "oca_bundle": Object {
+    "bundle": Object {
+      "capture_base": Object {
+        "attributes": Object {
+          "Age": "Numeric",
+          "BreastWt": "Numeric",
+          "Farm": "Text",
+          "Glucose": "Numeric",
+          "Lipase": "Numeric",
+          "LiveWt": "Numeric",
+        },
+        "classification": "",
+        "d": "EjhmGigwQ3_WyJfuVlGeBRBmf8nabqbfa1B62BVFjYmM",
+        "flagged_attributes": Array [],
+        "type": "spec/capture_base/1.0",
+      },
+      "d": "Er5gY9EIR5N46AVXYClsgBcjEic-Hrt3vLiZUhULJEQ8",
+      "overlays": Object {},
+      "v": "OCAB10JSON000000_",
+    },
+    "dependencies": Array [],
+  },
+  "type": "oca_package/1.0",
+}
+`;
+
+exports[`useOCAExport imported export baseline linkmlWithEnum: DSL and exported package: dsl 1`] = `
+Array [
+  "# add attributes (capture base)
+ADD ATTRIBUTE bird_id=Text live_weight=Numeric treatment=Text
+# Add classification
+# Add meta overlay
+ADD Meta en PROPS name=\\"poultry_trial\\" description=\\"Broiler feeding trial\\"
+# Add Format Overlay
+ADD Format ATTRS bird_id=\\"^[A-Z]{2}[0-9]{3}$\\" live_weight=\\"^[-+]?\\\\d*\\\\.?\\\\d+$\\"
+# Add Conformance Overlay
+ADD CONFORMANCE ATTRS bird_id=M live_weight=O treatment=M
+# Add Cardinality Overlay
+# Add label overlay
+# Add information overlay
+ADD Information en ATTRS bird_id=\\"Bird identifier\\"
+# Add entry code overlay
+ADD ENTRY_CODE ATTRS treatment=[\\"CTRL\\", \\"HIGH\\"]
+ADD ENTRY en ATTRS treatment={\\"CTRL\\": \\"Control diet\\", \\"HIGH\\": \\"High-protein diet\\"}
+
+# Add units overlay
+ADD Unit ATTRS live_weight=\\"g\\"
+# Add character encoding overlay
+",
+]
+`;
+
+exports[`useOCAExport imported export baseline linkmlWithEnum: DSL and exported package: package 1`] = `
+Object {
+  "d": "EP--Nb2KNUzF1AOC02KCcSYKpQsz4QvPj46AxjtIopOn",
+  "extensions": Object {
+    "adc": Object {
+      "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs": Object {
+        "d": "EH4tYkdx5YvY2cSRuJ1Gz_S4LKAs6BGO4OMpdF2OornE",
+        "overlays": Object {
+          "ordering": Object {
+            "attribute_ordering": Array [
+              "bird_id",
+              "live_weight",
+              "treatment",
+            ],
+            "capture_base": "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs",
+            "d": "EOQ58mEtaVrSM8oM7KR-g_IbBEyiNjJK-jho39RMem21",
+            "entry_code_ordering": Object {
+              "treatment": Array [
+                "CTRL",
+                "HIGH",
+              ],
+            },
+            "type": "community/overlays/adc/ordering/1.0",
+          },
+          "range": Object {
+            "attributes": Object {
+              "live_weight": Object {
+                "lower": "0",
+                "lower_inclusive": true,
+                "upper": "5000",
+                "upper_inclusive": true,
+              },
+            },
+            "capture_base": "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs",
+            "d": "EHDjDtHjdOCscsICSALOsI9IcJxxciFgIskwBFK5NP-j",
+            "type": "community/overlays/adc/range/1.0",
+          },
+          "unit_framing": Object {
+            "capture_base": "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs",
+            "d": "EGN-MwlKIJTanTg-syhtqY4KaQlht4tk-DYk-ApghNeI",
+            "framing_metadata": Object {
+              "id": "UCUM",
+              "label": "Unified Code for Units of Measure",
+              "location": "https://ucum.org/",
+              "version": "",
+            },
+            "type": "community/overlays/adc/unit_framing/1.0",
+            "units": Object {
+              "g": Object {
+                "framing_justification": "semapv:ManualMappingCuration",
+                "predicate_id": "skos:exactMatch",
+                "term_id": "g",
+              },
+            },
+          },
+        },
+        "type": "community/adc/extension/1.0",
+      },
+    },
+  },
+  "oca_bundle": Object {
+    "bundle": Object {
+      "capture_base": Object {
+        "attributes": Object {
+          "bird_id": "Text",
+          "live_weight": "Numeric",
+          "treatment": "Text",
+        },
+        "classification": "",
+        "d": "EVRMim2wL7qJ4jcXmZUClPJk8aPVW5jn2Se42KFsZWLs",
+        "flagged_attributes": Array [],
+        "type": "spec/capture_base/1.0",
+      },
+      "d": "E_r39lESYvW9kzNGf4ytzkwx7I_TNy7mLqzmb1mlURcY",
+      "overlays": Object {},
+      "v": "OCAB10JSON000000_",
+    },
+    "dependencies": Array [],
+  },
+  "type": "oca_package/1.0",
+}
+`;
+
+exports[`useOCAExport manual export baseline adversarialEscaping: DSL and exported package: dsl 1`] = `
+"# add attributes (capture base)
+ADD ATTRIBUTE q1=Text q2=Text
+# Add classification
+# Add meta overlay
+ADD Meta en PROPS name=\\"He said \\\\\\"hello\\\\\\"\\" description=\\"Backslash \\\\\\\\ and \\\\\\"quotes\\\\\\" and, commas\\"
+# Add Format Overlay
+ADD Format ATTRS q2=\\"^\\\\\\"quoted\\\\\\"\\\\d+$\\"
+# Add Conformance Overlay
+# Add Cardinality Overlay
+# Add label overlay
+ADD Label en ATTRS q1=\\"Label with \\\\\\"quotes\\\\\\"\\" q2=\\"Back\\\\\\\\slash\\"
+# Add information overlay
+ADD Information en ATTRS q1=\\"Line one
+Line two\\" q2=\\"Tab	separated, and = signs\\"
+# Add entry code overlay
+ADD ENTRY_CODE ATTRS q1=[\\"a\\\\\\"b\\", \\"c,d\\"]
+ADD ENTRY en ATTRS q1={\\"a\\\\\\"b\\": \\"Label \\\\\\"A\\\\\\"\\", \\"c,d\\": \\"Comma, label\\"}
+
+# Add units overlay
+# Add character encoding overlay
+"
+`;
+
+exports[`useOCAExport manual export baseline adversarialEscaping: DSL and exported package: package 1`] = `
+Object {
+  "d": "ECr_p9Spk0runBW4d_ixzfPafu7nDfVTKQtbHO2HNpBf",
+  "extensions": Object {
+    "adc": Object {
+      "EkX0H68GnxarXGpzEHbd69iFBLLYLxAU8_3191zAb_7g": Object {
+        "d": "EHXX_KbUhy4wTXLnZ8L9eUkwMhuVNFzTOQwJ1388nkhw",
+        "overlays": Object {
+          "ordering": Object {
+            "attribute_ordering": Array [
+              "q1",
+              "q2",
+            ],
+            "capture_base": "EkX0H68GnxarXGpzEHbd69iFBLLYLxAU8_3191zAb_7g",
+            "d": "EDPjbe4Sl6DqieDDXfpnAVTiOZnEy6BmjuBR9M2YoOu9",
+            "entry_code_ordering": Object {
+              "q1": Array [
+                "a\\"b",
+                "c,d",
+                "  ",
+              ],
+            },
+            "type": "community/overlays/adc/ordering/1.0",
+          },
+        },
+        "type": "community/adc/extension/1.0",
+      },
+    },
+  },
+  "oca_bundle": Object {
+    "bundle": Object {
+      "capture_base": Object {
+        "attributes": Object {
+          "q1": "Text",
+          "q2": "Text",
+        },
+        "classification": "",
+        "d": "EkX0H68GnxarXGpzEHbd69iFBLLYLxAU8_3191zAb_7g",
+        "flagged_attributes": Array [],
+        "type": "spec/capture_base/1.0",
+      },
+      "d": "ElBUB1uR4TbFhp6lqVGvGfzapee1YKENTA44HPLPhnys",
+      "overlays": Object {},
+      "v": "OCAB10JSON000000_",
+    },
+    "dependencies": Array [],
+  },
+  "type": "oca_package/1.0",
+}
+`;
+
+exports[`useOCAExport manual export baseline minimal: DSL and exported package: dsl 1`] = `
+"# add attributes (capture base)
+ADD ATTRIBUTE sample_id=Text weight=Numeric
+# Add classification
+# Add meta overlay
+ADD Meta en PROPS name=\\"Minimal\\" description=\\"Smallest useful schema\\"
+# Add Format Overlay
+# Add Conformance Overlay
+# Add Cardinality Overlay
+# Add label overlay
+ADD Label en ATTRS sample_id=\\"Sample\\" weight=\\"Weight\\"
+# Add information overlay
+ADD Information en ATTRS sample_id=\\"Unique sample id\\"
+# Add entry code overlay
+
+# Add units overlay
+# Add character encoding overlay
+"
+`;
+
+exports[`useOCAExport manual export baseline minimal: DSL and exported package: package 1`] = `
+Object {
+  "d": "EPvABPItP1WryIXiAVCyOE2qLj9Q4XF4t9i8rp88oKv6",
+  "extensions": Object {
+    "adc": Object {
+      "EbvXNu9MQ_jzSsLotNXnHrgaOdWHaBWyGdbx04rg6jB4": Object {
+        "d": "EGepO6Uizr-LDMX0ZDinJTz4ozpQmlbIPLT5mgm18cAW",
+        "overlays": Object {
+          "ordering": Object {
+            "attribute_ordering": Array [
+              "sample_id",
+              "weight",
+            ],
+            "capture_base": "EbvXNu9MQ_jzSsLotNXnHrgaOdWHaBWyGdbx04rg6jB4",
+            "d": "EKMIJxnm-T89HiCApkYGwSl_ZhHOG7MrK0jyObTiTRqI",
+            "entry_code_ordering": Object {},
+            "type": "community/overlays/adc/ordering/1.0",
+          },
+        },
+        "type": "community/adc/extension/1.0",
+      },
+    },
+  },
+  "oca_bundle": Object {
+    "bundle": Object {
+      "capture_base": Object {
+        "attributes": Object {
+          "sample_id": "Text",
+          "weight": "Numeric",
+        },
+        "classification": "",
+        "d": "EbvXNu9MQ_jzSsLotNXnHrgaOdWHaBWyGdbx04rg6jB4",
+        "flagged_attributes": Array [],
+        "type": "spec/capture_base/1.0",
+      },
+      "d": "Eu_E1NNM5nXcLbmGb8ToxgcUcnjhiEkTR2SnrHO6P_r4",
+      "overlays": Object {},
+      "v": "OCAB10JSON000000_",
+    },
+    "dependencies": Array [],
+  },
+  "type": "oca_package/1.0",
+}
+`;
+
+exports[`useOCAExport manual export baseline richBilingual: DSL and exported package: dsl 1`] = `
+"# add attributes (capture base)
+ADD ATTRIBUTE bird_id=Text live_weight=Numeric hatch_date=DateTime treatment=Text visits=Array[Text]
+# Add classification
+ADD classification Biological sciences
+# Add meta overlay
+ADD Meta en PROPS name=\\"Poultry trial\\" description=\\"Broiler feeding trial\\"
+ADD Meta fr PROPS name=\\"Poultry trial\\" description=\\"Broiler feeding trial\\"
+# Add Format Overlay
+ADD Format ATTRS bird_id=\\"^[A-Z]{2}[0-9]{3}$\\" live_weight=\\"^-?[0-9]+(\\\\.[0-9]+)?$\\" hatch_date=\\"YYYY-MM-DD\\"
+# Add Conformance Overlay
+ADD CONFORMANCE ATTRS bird_id=M live_weight=O hatch_date=O treatment=M visits=O
+# Add Cardinality Overlay
+ADD CARDINALITY ATTRS visits=\\"1-3\\"
+# Add label overlay
+ADD Label en ATTRS bird_id=\\"Bird\\" live_weight=\\"Live weight\\" hatch_date=\\"Hatch date\\" treatment=\\"Treatment\\" visits=\\"Visits\\"
+ADD Label fr ATTRS bird_id=\\"Oiseau\\" live_weight=\\"Poids vif\\" hatch_date=\\"Date d'éclosion\\" treatment=\\"Traitement\\" visits=\\"Visites\\"
+# Add information overlay
+ADD Information en ATTRS bird_id=\\"Bird identifier\\" live_weight=\\"Weight at day 42\\" treatment=\\"Diet group\\" visits=\\"Vet visits\\"
+ADD Information fr ATTRS bird_id=\\"Identifiant de l'oiseau\\" live_weight=\\"Poids au jour 42\\" treatment=\\"Groupe alimentaire\\" visits=\\"Visites vétérinaires\\"
+# Add entry code overlay
+ADD ENTRY_CODE ATTRS treatment=[\\"CTRL\\", \\"HIGH\\"]
+ADD ENTRY en ATTRS treatment={\\"CTRL\\": \\"Control diet\\", \\"HIGH\\": \\"High-protein diet\\"}
+ADD ENTRY fr ATTRS treatment={\\"CTRL\\": \\"Régime témoin\\", \\"HIGH\\": \\"Régime riche en protéines\\"}
+
+# Add units overlay
+ADD Unit ATTRS live_weight=\\"g\\"
+# Add character encoding overlay
+ADD CHARACTER_ENCODING ATTRS bird_id=\\"utf-8\\"
+"
+`;
+
+exports[`useOCAExport manual export baseline richBilingual: DSL and exported package: package 1`] = `
+Object {
+  "d": "EBIPNmIonPUrIRDewHAFRIRYwjz-9aSobaU_jeJwth6r",
+  "extensions": Object {
+    "adc": Object {
+      "Eov5MaROtFGbIYG7vwIlPFjKjNLnmsj8kpNgn8IqQOPg": Object {
+        "d": "ECniYZ0SaBYzDoWf6n0zHW-MESwiUKET6PtUX7IK4agf",
+        "overlays": Object {
+          "decimal_separator": Object {
+            "capture_base": "Eov5MaROtFGbIYG7vwIlPFjKjNLnmsj8kpNgn8IqQOPg",
+            "d": "EObDqmkmPIxYMeJL7ZvwfWe147vqLt_9T3wOM33vwEI-",
+            "delimiter": ",",
+            "type": "community/overlays/adc/decimal_separator/1.0",
+          },
+          "example": Array [
+            Object {
+              "attribute_examples": Object {
+                "bird_id": "AB123",
+                "live_weight": "2450",
+              },
+              "capture_base": "Eov5MaROtFGbIYG7vwIlPFjKjNLnmsj8kpNgn8IqQOPg",
+              "d": "ECUAbnj1RxlhW9VOmT9n5KQNPfly7R1qP9GD6C_JR7D3",
+              "language": "eng",
+              "type": "community/overlays/adc/example/1.0",
+            },
+            Object {
+              "attribute_examples": Object {
+                "bird_id": "AB123",
+                "live_weight": "2450",
+              },
+              "capture_base": "Eov5MaROtFGbIYG7vwIlPFjKjNLnmsj8kpNgn8IqQOPg",
+              "d": "EO8UHW6fT3h5rhM5N1KOhH0doVYpxmB2pjxZQrXSLeH1",
+              "language": "fra",
+              "type": "community/overlays/adc/example/1.0",
+            },
+          ],
+          "ordering": Object {
+            "attribute_ordering": Array [
+              "bird_id",
+              "live_weight",
+              "hatch_date",
+              "treatment",
+              "visits",
+            ],
+            "capture_base": "Eov5MaROtFGbIYG7vwIlPFjKjNLnmsj8kpNgn8IqQOPg",
+            "d": "EAYya1P88fm-u20tNeEGiZ5Q-mM8yV-xQXtEvwpMYu-7",
+            "entry_code_ordering": Object {
+              "treatment": Array [
+                "CTRL",
+                "HIGH",
+              ],
+            },
+            "type": "community/overlays/adc/ordering/1.0",
+          },
+          "range": Object {
+            "attributes": Object {
+              "live_weight": Object {
+                "lower": "0",
+                "lower_inclusive": true,
+                "upper": "5000",
+                "upper_inclusive": false,
+              },
+            },
+            "capture_base": "Eov5MaROtFGbIYG7vwIlPFjKjNLnmsj8kpNgn8IqQOPg",
+            "d": "EMfE-Gxm0Yucz8B6pYOmiwqNxu-I8x78Rviz7K5m_S1K",
+            "type": "community/overlays/adc/range/1.0",
+          },
+          "sensitive": Object {
+            "capture_base": "Eov5MaROtFGbIYG7vwIlPFjKjNLnmsj8kpNgn8IqQOPg",
+            "d": "EP7cJrqM2PyJVholyagSuOcdNLYwDKb1lQKVNloI7CsT",
+            "sensitive_attributes": Array [
+              "bird_id",
+            ],
+            "type": "community/overlays/adc/sensitive/1.0",
+          },
+        },
+        "type": "community/adc/extension/1.0",
+      },
+    },
+  },
+  "oca_bundle": Object {
+    "bundle": Object {
+      "capture_base": Object {
+        "attributes": Object {
+          "bird_id": "Text",
+          "hatch_date": "DateTime",
+          "live_weight": "Numeric",
+          "treatment": "Text",
+          "visits": "Array[Text]",
+        },
+        "classification": "",
+        "d": "Eov5MaROtFGbIYG7vwIlPFjKjNLnmsj8kpNgn8IqQOPg",
+        "flagged_attributes": Array [],
+        "type": "spec/capture_base/1.0",
+      },
+      "d": "ERoxw4NXQIn6fN7KY80hqnCJctsUQh23-ip8bz-LDat0",
+      "overlays": Object {},
+      "v": "OCAB10JSON000000_",
+    },
+    "dependencies": Array [],
+  },
+  "type": "oca_package/1.0",
+}
+`;

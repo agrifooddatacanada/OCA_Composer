@@ -31,3 +31,7 @@ export * from "./validator/exampleValidation";
 
 export * from "./linkml/linkMLToOCA";
 export * from "./linkml/mapLinkMLToOCABundle";
+
+export * from "./export/overlayInputs";
+export * from "./export/schemaExport";
+export * from "./export/packageAssembly";
