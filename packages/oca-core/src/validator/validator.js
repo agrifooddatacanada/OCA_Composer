@@ -287,9 +287,15 @@ export default class OCABundle {
           if (attributeType === "DateTime") {
             const rowValueDate = parseDateString(rowValue);
             if (rowValueDate) {
-              const lowerBoundDate = parseDateString(lower);
-              const upperBoundDate = parseDateString(upper);
               const isDuration = Duration.isDuration(rowValueDate);
+              // Only compare against bounds of the same kind (Duration vs DateTime)
+              const parseBound = (b) => {
+                if (b === undefined || b === null || typeof b !== "string") return null;
+                const parsed = parseDateString(b);
+                return parsed && Duration.isDuration(parsed) === isDuration ? parsed : null;
+              };
+              const lowerBoundDate = parseBound(lower);
+              const upperBoundDate = parseBound(upper);
               const rowVal = isDuration ? rowValueDate.as("milliseconds") : rowValueDate;
 
               if (lowerBoundDate) {
