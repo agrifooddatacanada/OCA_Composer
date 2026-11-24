@@ -14,7 +14,7 @@
   "scripts": {
     "build": "node build.mjs",
     "start": "node dist/index.js",
-    "test": "node build.mjs && node --test test/"
+    "test": "node build.mjs && node --test test/*.test.js"
   },
   "engines": {
     "node": ">=20"

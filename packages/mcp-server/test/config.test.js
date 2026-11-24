@@ -5,7 +5,7 @@ import {
   DEFAULT_BUNDLE_SERVICE_URL,
   DEFAULT_BUNDLE_TIMEOUT_MS,
   readConfig
-} from "../dist/server.js";
+} from "../dist/lib/config.js";
 
 describe("readConfig", () => {
   test("defaults to the hosted bundle service used by OCA Composer", () => {

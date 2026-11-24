@@ -23,13 +23,6 @@ import {
 } from "./lib/lookups.js";
 import { VALIDATION_ERROR_CODES_MARKDOWN } from "./resources/validationErrorCodes.js";
 
-export {
-  ConfigError,
-  DEFAULT_BUNDLE_SERVICE_URL,
-  DEFAULT_BUNDLE_TIMEOUT_MS,
-  readConfig
-} from "./lib/config.js";
-
 export const SERVER_NAME = "oca-composer";
 export const SERVER_VERSION = "0.1.0";
 
