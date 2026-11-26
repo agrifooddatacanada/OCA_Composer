@@ -46,19 +46,28 @@ describe("server capabilities", () => {
   test("lists tools, resources and prompts", async () => {
     const { tools } = await client.listTools();
     assert.deepEqual(tools.map((t) => t.name).sort(), [
+      "build_oca_package",
       "convert_linkml_to_oca",
       "inspect_oca_package",
       "search_format_rules",
       "search_ucum_units",
-      "validate_dataset"
+      "validate_dataset",
+      "validate_schema_spec"
     ]);
     const validate = tools.find((t) => t.name === "validate_dataset");
     assert.equal(validate.annotations.readOnlyHint, true);
     assert.ok(validate.inputSchema.properties.column_mapping);
 
+    const build = tools.find((t) => t.name === "build_oca_package");
+    assert.equal(build.annotations.openWorldHint, true);
+    const attributeSchema = build.inputSchema.properties.spec.properties.attributes.items;
+    assert.ok(attributeSchema.properties.type.enum.includes("Array[Text]"));
+    assert.equal(attributeSchema.additionalProperties, false);
+
     const { resources } = await client.listResources();
     assert.deepEqual(resources.map((r) => r.uri).sort(), [
       "oca://reference/format-rules",
+      "oca://reference/schema-spec",
       "oca://reference/validation-error-codes"
     ]);
 
@@ -351,7 +360,7 @@ describe("stdio binary", () => {
     await stdioClient.connect(transport);
     try {
       const { tools } = await stdioClient.listTools();
-      assert.equal(tools.length, 5);
+      assert.equal(tools.length, 7);
       const result = await stdioClient.callTool({
         name: "validate_dataset",
         arguments: { package_path: TRIAL_PACKAGE, dataset_path: TRIAL_DATA }

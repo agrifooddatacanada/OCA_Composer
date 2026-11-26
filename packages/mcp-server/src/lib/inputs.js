@@ -1,4 +1,4 @@
-import { readFile, stat } from "node:fs/promises";
+import { access, readFile, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
 import Papa from "papaparse";
@@ -9,6 +9,7 @@ import {
   decodeBytesToString,
   normalizeInvertedExclamationAsDegree
 } from "@oca-composer/oca-core";
+import { schemaSpecSchema } from "./schemaSpec.js";
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
@@ -85,6 +86,68 @@ export async function loadOcaPackage({ package_path, package_json }) {
     );
   }
   return pkg;
+}
+
+/** A zod issue path as checkSchemaSpec writes it: attributes[3].type */
+export const formatIssuePath = (issuePath) =>
+  issuePath.reduce(
+    (text, key) => (typeof key === "number" ? `${text}[${key}]` : text ? `${text}.${key}` : key),
+    ""
+  );
+
+/**
+ * Returns the schema spec passed inline (already checked against schemaSpecSchema by the
+ * tool's input schema) or read from a JSON file.
+ */
+export async function loadSchemaSpec({ spec, spec_path }) {
+  const hasPath = typeof spec_path === "string" && spec_path !== "";
+  if (hasPath === (spec !== undefined)) {
+    throw new InputError("Provide exactly one of \"spec\" or \"spec_path\".");
+  }
+  if (!hasPath) return spec;
+
+  const { resolved, bytes } = await readUserFile(spec_path);
+  let parsed;
+  try {
+    parsed = JSON.parse(decodeBytesToString(new Uint8Array(bytes)));
+  } catch (err) {
+    throw new InputError(`The schema spec (${resolved}) is not valid JSON: ${err.message}`);
+  }
+  const result = schemaSpecSchema.safeParse(parsed);
+  if (!result.success) {
+    const problems = result.error.issues.map((issue) =>
+      issue.path.length ? `- ${formatIssuePath(issue.path)}: ${issue.message}` : `- ${issue.message}`
+    );
+    throw new InputError(
+      `The schema spec in ${resolved} does not match the spec format:\n${problems.join("\n")}`
+    );
+  }
+  return result.data;
+}
+
+/** Resolves an output path and fails if the file exists, unless overwrite is set. */
+export async function prepareOutputPath(outputPath, { overwrite = false } = {}) {
+  const resolved = resolveUserPath(outputPath);
+  if (!overwrite) {
+    const exists = await access(resolved).then(
+      () => true,
+      () => false
+    );
+    if (exists) {
+      throw new InputError(
+        `${resolved} already exists. Choose another path or set overwrite to true.`
+      );
+    }
+  }
+  return resolved;
+}
+
+export async function writeJsonFile(resolvedPath, data) {
+  try {
+    await writeFile(resolvedPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+  } catch (err) {
+    throw new InputError(`Could not write ${resolvedPath}: ${err.message}`);
+  }
 }
 
 /** Loads a LinkML schema (YAML or JSON) from a file path or inline text. */
