@@ -1,3 +1,4 @@
+import path from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
@@ -7,6 +8,7 @@ import {
   transformToPackage
 } from "@oca-composer/oca-core";
 import { readConfig } from "./lib/config.js";
+import { DEFAULT_MAX_ENTRY_CODES, inferSchemaFromDataset } from "./lib/inference.js";
 import {
   InputError,
   loadDataset,
@@ -16,6 +18,7 @@ import {
   prepareOutputPath,
   writeJsonFile
 } from "./lib/inputs.js";
+import { findLanguage } from "./lib/languages.js";
 import { summarizePackage } from "./lib/schemaSummary.js";
 import { checkSchemaSpec, schemaSpecSchema } from "./lib/schemaSpec.js";
 import { buildPackageFromSpec, diffReadBack, previewDsl } from "./lib/specPackage.js";
@@ -77,6 +80,21 @@ const packageInput = {
     )
 };
 
+const datasetInput = {
+  dataset_path: z
+    .string()
+    .optional()
+    .describe("Absolute path to a .csv, .tsv, .xlsx or .xls file."),
+  dataset_csv: z
+    .string()
+    .optional()
+    .describe("Comma-separated data as text, with a header row. Use instead of dataset_path."),
+  sheet: z.string().optional().describe(
+    // eslint-disable-next-line quotes -- Prettier formats strings containing double quotes as single-quoted
+    'Excel sheet name. Defaults to the "Schema Conformant Data" sheet if present, else the first sheet.'
+  )
+};
+
 const specInput = {
   spec: schemaSpecSchema
     .optional()
@@ -110,7 +128,8 @@ export function createServer({ config = readConfig(), fetch } = {}) {
       instructions:
         "Tools for OCA (Overlays Capture Architecture) schemas, backed by OCA Composer's own " +
         "logic. Never write OCA JSON, digests or validation results yourself: call these tools. " +
-        "To create a schema, write a schema spec (oca://reference/schema-spec), check it with " +
+        "To create a schema, write a schema spec (oca://reference/schema-spec), or draft one " +
+        "from a dataset with infer_schema_from_dataset, check it with " +
         "validate_schema_spec until it has no errors, then call build_oca_package. " +
         "File arguments must be absolute paths on the user's machine."
     }
@@ -143,20 +162,7 @@ export function createServer({ config = readConfig(), fetch } = {}) {
         "ignores warnings, as the Composer does.",
       inputSchema: {
         ...packageInput,
-        dataset_path: z
-          .string()
-          .optional()
-          .describe("Absolute path to a .csv, .tsv, .xlsx or .xls file."),
-        dataset_csv: z
-          .string()
-          .optional()
-          .describe(
-            "Comma-separated data as text, with a header row. Use instead of dataset_path."
-          ),
-        sheet: z.string().optional().describe(
-          // eslint-disable-next-line quotes -- Prettier formats strings containing double quotes as single-quoted
-          'Excel sheet name. Defaults to the "Schema Conformant Data" sheet if present, else the first sheet.'
-        ),
+        ...datasetInput,
         column_mapping: z
           .record(z.string(), z.string().nullable())
           .optional()
@@ -282,6 +288,81 @@ export function createServer({ config = readConfig(), fetch } = {}) {
       });
       await writeJsonFile(outputPath, pkg);
       return asJsonResult({ ...result, written_to: outputPath });
+    })
+  );
+
+  server.registerTool(
+    "infer_schema_from_dataset",
+    {
+      title: "Draft a schema spec from a dataset",
+      description:
+        "Draft a schema spec from a CSV, TSV or Excel dataset, without any model and without " +
+        "sending data anywhere. Suggests each column's type, a format rule only when every " +
+        "value already passes it, entry codes for columns with a few repeated values, and " +
+        "required and sensitive flags, with the evidence for each column. Labels are the " +
+        "column headers; descriptions, translations and units are left to you. Review the " +
+        "draft with the user, then check it with validate_schema_spec. Pass the returned " +
+        "column_mapping to validate_dataset, since some headers become different attribute names.",
+      inputSchema: {
+        ...datasetInput,
+        languages: z
+          .array(z.string())
+          .min(1)
+          .default(["en"])
+          .describe("Language codes for the schema, primary language first, e.g. [\"en\", \"fr\"]."),
+        schema_name: z
+          .string()
+          .optional()
+          .describe("Schema name in the primary language. Defaults to the file name."),
+        max_entry_codes: z
+          .number()
+          .int()
+          .min(0)
+          .max(100)
+          .default(DEFAULT_MAX_ENTRY_CODES)
+          .describe("Most distinct values a Text column can have to get entry codes. 0 turns them off."),
+        output_path: z
+          .string()
+          .optional()
+          .describe("Absolute path to also write the draft spec JSON to."),
+        overwrite: z.boolean().default(false)
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false }
+    },
+    withErrors(async (args) => {
+      const languages = args.languages.map((code) => {
+        const language = findLanguage(code);
+        if (!language) {
+          throw new InputError(
+            `Unknown language "${code}". See the languages table in oca://reference/schema-spec.`
+          );
+        }
+        return language;
+      });
+      const duplicate = languages.find(
+        (language, index) => languages.findIndex((other) => other.code === language.code) !== index
+      );
+      if (duplicate) throw new InputError(`Language "${duplicate.code}" is listed twice.`);
+
+      const outputPath = args.output_path
+        ? await prepareOutputPath(args.output_path, { overwrite: args.overwrite })
+        : null;
+      const dataset = await loadDataset(args);
+      if (dataset.headers.length === 0) {
+        throw new InputError(`No header row found in ${dataset.source}.`);
+      }
+      const schemaName =
+        args.schema_name?.trim() ||
+        (args.dataset_path ? path.basename(args.dataset_path, path.extname(args.dataset_path)) : "") ||
+        "Dataset";
+
+      const result = inferSchemaFromDataset(dataset, {
+        languages,
+        schemaName,
+        maxEntryCodes: args.max_entry_codes
+      });
+      if (outputPath) await writeJsonFile(outputPath, result.draft_spec);
+      return asJsonResult({ ...result, ...(outputPath ? { written_to: outputPath } : {}) });
     })
   );
 
@@ -468,6 +549,70 @@ export function createServer({ config = readConfig(), fetch } = {}) {
         }
       ]
     })
+  );
+
+  server.registerPrompt(
+    "draft_schema_from_dataset",
+    {
+      title: "Draft an OCA schema from a dataset",
+      description:
+        "Draft a schema from a dataset, refine it with you, build the OCA package and check " +
+        "the data against it.",
+      argsSchema: {
+        dataset_path: z
+          .string()
+          .describe("Absolute path to the CSV, TSV or Excel dataset"),
+        output_path: z
+          .string()
+          .optional()
+          .describe("Absolute path to save the OCA package JSON to"),
+        languages: z
+          .string()
+          .optional()
+          .describe("Comma-separated language codes, primary first, e.g. en,fr")
+      }
+    },
+    ({ dataset_path, output_path, languages }) => {
+      const languageCodes = (languages || "")
+        .split(",")
+        .map((code) => code.trim())
+        .filter(Boolean);
+      const languageArgument = languageCodes.length
+        ? ` and languages ${JSON.stringify(languageCodes)}`
+        : "";
+      const saveTo = output_path
+        ? `output_path "${output_path}"`
+        : "an output_path the user chooses (ask them)";
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text:
+                `Create an OCA schema for the dataset at ${dataset_path}.\n\n` +
+                `1. Call infer_schema_from_dataset with dataset_path${languageArgument}. Read ` +
+                "oca://reference/schema-spec for the spec format.\n" +
+                "2. Show the user a short table of the draft: column, type, format rule, " +
+                "required, sensitive, entry codes, plus any column notes. Ask them to confirm " +
+                "the required and sensitive flags and any ambiguous date formats; do not guess.\n" +
+                "3. Improve the draft: clear labels and a description for every attribute in " +
+                "every language, entry-code labels in every language, and units for " +
+                "measurements found with search_ucum_units (never invent unit codes). Keep the " +
+                "attribute names so the data still matches.\n" +
+                "4. Call validate_schema_spec and fix every error. Go through the warnings with " +
+                "the user.\n" +
+                "5. Tell the user that building sends the schema, never the data, to the OCA " +
+                "bundle service and that examples are published with it. With their go-ahead, " +
+                `call build_oca_package with ${saveTo}.\n` +
+                "6. Call validate_dataset with the new package and the same dataset, passing " +
+                "the column_mapping from step 1 if there was one. Report whether the data " +
+                "passed; if not, explain whether the schema or the data should change."
+            }
+          }
+        ]
+      };
+    }
   );
 
   return server;

@@ -62,7 +62,8 @@ export const SCHEMA_SPEC_REFERENCE_MARKDOWN = `# Schema spec
 
 A schema spec describes one OCA schema as JSON. Check it with \`validate_schema_spec\`, then
 turn it into an OCA package with \`build_oca_package\`. Afterwards, \`validate_dataset\` with the
-new package and the original data confirms the schema fits the data.
+new package and the original data confirms the schema fits the data. To start from a dataset,
+\`infer_schema_from_dataset\` drafts a spec locally, without sending the data anywhere.
 
 Every human-readable text is an object keyed by language code, for example
 \`{"en": "Weight", "fr": "Poids"}\`. Use only the codes listed in \`languages\`.

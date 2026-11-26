@@ -48,6 +48,7 @@ describe("server capabilities", () => {
     assert.deepEqual(tools.map((t) => t.name).sort(), [
       "build_oca_package",
       "convert_linkml_to_oca",
+      "infer_schema_from_dataset",
       "inspect_oca_package",
       "search_format_rules",
       "search_ucum_units",
@@ -73,8 +74,8 @@ describe("server capabilities", () => {
 
     const { prompts } = await client.listPrompts();
     assert.deepEqual(
-      prompts.map((p) => p.name),
-      ["validate_and_explain"]
+      prompts.map((p) => p.name).sort(),
+      ["draft_schema_from_dataset", "validate_and_explain"]
     );
   });
 
@@ -360,7 +361,7 @@ describe("stdio binary", () => {
     await stdioClient.connect(transport);
     try {
       const { tools } = await stdioClient.listTools();
-      assert.equal(tools.length, 7);
+      assert.equal(tools.length, 8);
       const result = await stdioClient.callTool({
         name: "validate_dataset",
         arguments: { package_path: TRIAL_PACKAGE, dataset_path: TRIAL_DATA }

@@ -1,0 +1,141 @@
+{
+  "created": {
+    "c034a53181edfdf0601964c74c5298350b89c5f9b3d29a66d4b1b081858c51e7": {
+      "dsl": "# add attributes (capture base)\nADD ATTRIBUTE Plot_ID=Text Survey_date=DateTime Observed_at=DateTime Species=Text Count=Numeric Weight_g=Numeric Healthy=Boolean Flagged=Numeric Observer_email=Text Latitude=Numeric Temp=Numeric Notes=Text\n# Add classification\n# Add meta overlay\nADD Meta en PROPS name=\"pollinator_survey\" description=\"\"\n# Add Format Overlay\nADD Format ATTRS Survey_date=\"^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{4}$\" Observed_at=\"^([01]\\d|2[0-3]):([0-5]\\d)$\" Count=\"^-?[0-9]+$\" Weight_g=\"^[-+]?\\d*\\.?\\d+$\" Flagged=\"^-?[0-9]+$\" Observer_email=\"[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+\" Latitude=\"^[-+]?\\d*\\.?\\d+$\"\n# Add Conformance Overlay\nADD CONFORMANCE ATTRS Plot_ID=M Survey_date=M Observed_at=M Species=M Count=M Weight_g=O Healthy=M Flagged=M Observer_email=M Latitude=M Temp=M Notes=O\n# Add Cardinality Overlay\n# Add label overlay\nADD Label en ATTRS Plot_ID=\"Plot ID\" Survey_date=\"Survey date\" Observed_at=\"Observed at\" Species=\"Species\" Count=\"Count\" Weight_g=\"Weight (g)\" Healthy=\"Healthy\" Flagged=\"Flagged\" Observer_email=\"Observer email\" Latitude=\"Latitude\" Temp=\"Temp\" Notes=\"Notes\"\n# Add information overlay\n# Add entry code overlay\nADD ENTRY_CODE ATTRS Species=[\"Bee\", \"Wasp\", \"Fly\"]\nADD ENTRY en ATTRS Species={\"Bee\": \"Bee\", \"Wasp\": \"Wasp\", \"Fly\": \"Fly\"}\n\n# Add units overlay\n# Add character encoding overlay\n",
+      "status": 200,
+      "json": {
+        "success": true,
+        "said": "ELQBwH4_GqnTaTQ0sg-GQkHKM-k6mETNUQbflpP7OIgn"
+      }
+    }
+  },
+  "bundles": {
+    "ELQBwH4_GqnTaTQ0sg-GQkHKM-k6mETNUQbflpP7OIgn": {
+      "status": 200,
+      "json": {
+        "v": "OCAA11JSON0009f9_",
+        "bundle": {
+          "v": "OCAS11JSON0009dc_",
+          "d": "ELQBwH4_GqnTaTQ0sg-GQkHKM-k6mETNUQbflpP7OIgn",
+          "capture_base": {
+            "d": "ECc6rt9WoBWhO5FHw0qhRu4sV6lgter1uvEFUeKcKxF6",
+            "type": "spec/capture_base/1.1",
+            "attributes": {
+              "Count": "Numeric",
+              "Flagged": "Numeric",
+              "Healthy": "Boolean",
+              "Latitude": "Numeric",
+              "Notes": "Text",
+              "Observed_at": "DateTime",
+              "Observer_email": "Text",
+              "Plot_ID": "Text",
+              "Species": "Text",
+              "Survey_date": "DateTime",
+              "Temp": "Numeric",
+              "Weight_g": "Numeric"
+            },
+            "classification": "",
+            "flagged_attributes": []
+          },
+          "overlays": {
+            "conformance": {
+              "d": "EO2DiUHnz1pm5SUjT30bUyOfTeXG-TYhJKdQigQ1BtxT",
+              "capture_base": "ECc6rt9WoBWhO5FHw0qhRu4sV6lgter1uvEFUeKcKxF6",
+              "type": "spec/overlays/conformance/1.1",
+              "attribute_conformance": {
+                "Count": "M",
+                "Flagged": "M",
+                "Healthy": "M",
+                "Latitude": "M",
+                "Notes": "O",
+                "Observed_at": "M",
+                "Observer_email": "M",
+                "Plot_ID": "M",
+                "Species": "M",
+                "Survey_date": "M",
+                "Temp": "M",
+                "Weight_g": "O"
+              }
+            },
+            "entry": [
+              {
+                "d": "ECLkZmjIO1bAWfprmGainspUOe5PHitmMPOWfj-jBHb9",
+                "capture_base": "ECc6rt9WoBWhO5FHw0qhRu4sV6lgter1uvEFUeKcKxF6",
+                "type": "spec/overlays/entry/1.1",
+                "language": "eng",
+                "attribute_entries": {
+                  "Species": {
+                    "Bee": "Bee",
+                    "Fly": "Fly",
+                    "Wasp": "Wasp"
+                  }
+                }
+              }
+            ],
+            "entry_code": {
+              "d": "EE5iOFEtmw27rSyuO9jDxwmcWYTWD5xqGaqGD8vCOsRc",
+              "capture_base": "ECc6rt9WoBWhO5FHw0qhRu4sV6lgter1uvEFUeKcKxF6",
+              "type": "spec/overlays/entry_code/1.1",
+              "attribute_entry_codes": {
+                "Species": [
+                  "Bee",
+                  "Fly",
+                  "Wasp"
+                ]
+              }
+            },
+            "format": {
+              "d": "EIuOOafXfazKIt4atiRkFG93EnHp5dM_pt5UT3Vx2RhZ",
+              "capture_base": "ECc6rt9WoBWhO5FHw0qhRu4sV6lgter1uvEFUeKcKxF6",
+              "type": "spec/overlays/format/1.1",
+              "attribute_formats": {
+                "Count": "^-?[0-9]+$",
+                "Flagged": "^-?[0-9]+$",
+                "Latitude": "^[-+]?\\d*\\.?\\d+$",
+                "Observed_at": "^([01]\\d|2[0-3]):([0-5]\\d)$",
+                "Observer_email": "[a-zA-Z0-9_\\.\\+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-\\.]+",
+                "Survey_date": "^(0[1-9]|[12]\\d|3[01])/(0[1-9]|1[0-2])/\\d{4}$",
+                "Weight_g": "^[-+]?\\d*\\.?\\d+$"
+              }
+            },
+            "label": [
+              {
+                "d": "EO7knMhSkz-5NTCedIHk4p1NQZPIWAP2Mh1GfC1F1UAy",
+                "capture_base": "ECc6rt9WoBWhO5FHw0qhRu4sV6lgter1uvEFUeKcKxF6",
+                "type": "spec/overlays/label/1.1",
+                "language": "eng",
+                "attribute_categories": [],
+                "attribute_labels": {
+                  "Count": "Count",
+                  "Flagged": "Flagged",
+                  "Healthy": "Healthy",
+                  "Latitude": "Latitude",
+                  "Notes": "Notes",
+                  "Observed_at": "Observed at",
+                  "Observer_email": "Observer email",
+                  "Plot_ID": "Plot ID",
+                  "Species": "Species",
+                  "Survey_date": "Survey date",
+                  "Temp": "Temp",
+                  "Weight_g": "Weight (g)"
+                },
+                "category_labels": {}
+              }
+            ],
+            "meta": [
+              {
+                "d": "ENAQ1BlIoEi1rGV9ksC_hxyLAzuTnQ8h7JbBZqgAqJyd",
+                "capture_base": "ECc6rt9WoBWhO5FHw0qhRu4sV6lgter1uvEFUeKcKxF6",
+                "type": "spec/overlays/meta/1.1",
+                "language": "eng",
+                "description": "",
+                "name": "pollinator_survey"
+              }
+            ]
+          }
+        },
+        "dependencies": []
+      }
+    }
+  }
+}
