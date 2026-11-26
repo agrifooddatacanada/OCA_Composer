@@ -1,19 +1,24 @@
-import { writeFile, access } from "node:fs/promises";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
+  BundleServiceError,
   findMissingLinkMLEnums,
   mapLinkMLToOCABundle,
   transformToPackage
 } from "@oca-composer/oca-core";
+import { readConfig } from "./lib/config.js";
 import {
   InputError,
   loadDataset,
   loadLinkMLSchema,
   loadOcaPackage,
-  resolveUserPath
+  loadSchemaSpec,
+  prepareOutputPath,
+  writeJsonFile
 } from "./lib/inputs.js";
 import { summarizePackage } from "./lib/schemaSummary.js";
+import { checkSchemaSpec, schemaSpecSchema } from "./lib/schemaSpec.js";
+import { buildPackageFromSpec, diffReadBack, previewDsl } from "./lib/specPackage.js";
 import { validateDataset } from "./lib/validation.js";
 import {
   FORMAT_RULE_TYPES,
@@ -21,6 +26,7 @@ import {
   searchFormatRules,
   searchUcumUnits
 } from "./lib/lookups.js";
+import { SCHEMA_SPEC_REFERENCE_MARKDOWN } from "./resources/schemaSpecReference.js";
 import { VALIDATION_ERROR_CODES_MARKDOWN } from "./resources/validationErrorCodes.js";
 
 export const SERVER_NAME = "oca-composer";
@@ -35,13 +41,17 @@ function asJsonResult(data) {
 }
 
 function asErrorResult(err) {
-  if (!(err instanceof InputError)) {
+  let text = err.message || "The OCA Composer tool failed.";
+  if (err instanceof BundleServiceError) {
+    if (err.kind === "network" || err.kind === "timeout") {
+      text +=
+        "\nCheck the internet connection. To use another bundle service, start the server " +
+        "with OCA_REPOSITORY_API_URL.";
+    }
+  } else if (!(err instanceof InputError)) {
     log(err.stack ?? String(err));
   }
-  return {
-    isError: true,
-    content: [{ type: "text", text: err.message || "The OCA Composer tool failed." }]
-  };
+  return { isError: true, content: [{ type: "text", text }] };
 }
 
 function withErrors(handler) {
@@ -67,15 +77,41 @@ const packageInput = {
     )
 };
 
+const specInput = {
+  spec: schemaSpecSchema
+    .optional()
+    .describe("The schema spec. Read oca://reference/schema-spec for the format."),
+  spec_path: z
+    .string()
+    .optional()
+    .describe("Absolute path to a schema spec JSON file. Use instead of spec.")
+};
+
 const READ_ONLY = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
 
-export function createServer() {
+const formatProblems = (problems) =>
+  problems.map(({ path, message }) => `- ${path}: ${message}`).join("\n");
+
+/**
+ * @param {Object} [options]
+ * @param {Object} [options.config] - Settings from readConfig(); read from the environment by default
+ * @param {Function} [options.fetch] - fetch used for the OCA bundle service
+ */
+export function createServer({ config = readConfig(), fetch } = {}) {
+  const bundleService = {
+    baseUrl: config.bundleServiceUrl,
+    timeoutMs: config.bundleTimeoutMs,
+    ...(fetch ? { fetch } : {})
+  };
+
   const server = new McpServer(
     { name: SERVER_NAME, version: SERVER_VERSION },
     {
       instructions:
         "Tools for OCA (Overlays Capture Architecture) schemas, backed by OCA Composer's own " +
         "logic. Never write OCA JSON, digests or validation results yourself: call these tools. " +
+        "To create a schema, write a schema spec (oca://reference/schema-spec), check it with " +
+        "validate_schema_spec until it has no errors, then call build_oca_package. " +
         "File arguments must be absolute paths on the user's machine."
     }
   );
@@ -241,19 +277,101 @@ export function createServer() {
         return asJsonResult({ ...result, package: pkg });
       }
 
-      const outputPath = resolveUserPath(args.output_path);
-      if (!args.overwrite) {
-        const exists = await access(outputPath).then(
-          () => true,
-          () => false
+      const outputPath = await prepareOutputPath(args.output_path, {
+        overwrite: args.overwrite
+      });
+      await writeJsonFile(outputPath, pkg);
+      return asJsonResult({ ...result, written_to: outputPath });
+    })
+  );
+
+  server.registerTool(
+    "validate_schema_spec",
+    {
+      title: "Check a schema spec",
+      description:
+        "Check a schema spec before building it, without contacting any service: unknown " +
+        "languages, units or classification codes, invalid format rules, rules that do not " +
+        "fit an attribute's type, missing entry-code labels, and text OCA Composer would " +
+        "change. Returns errors (must fix), warnings (worth reviewing) and, when there are " +
+        "no errors, the OCA DSL the spec turns into. Read oca://reference/schema-spec first.",
+      inputSchema: specInput,
+      annotations: READ_ONLY
+    },
+    withErrors(async (args) => {
+      const spec = await loadSchemaSpec(args);
+      const { errors, warnings } = checkSchemaSpec(spec);
+      return asJsonResult({
+        valid: errors.length === 0,
+        errors,
+        warnings,
+        ...(errors.length === 0 ? { dsl_preview: previewDsl(spec) } : {})
+      });
+    })
+  );
+
+  server.registerTool(
+    "build_oca_package",
+    {
+      title: "Build an OCA package from a schema spec",
+      description:
+        "Build a publishable OCA package from a schema spec, exactly as OCA Composer exports " +
+        "one. The schema (never any data) is sent to the OCA bundle service, which computes " +
+        "the digests. Refuses specs that validate_schema_spec reports errors for. Returns the " +
+        "schema SAID, a summary and the spec's warnings. Writes to output_path when given " +
+        "(refusing to overwrite unless overwrite is true), otherwise returns the package JSON.",
+      inputSchema: {
+        ...specInput,
+        output_path: z
+          .string()
+          .optional()
+          .describe("Absolute path to write the OCA package JSON to."),
+        overwrite: z.boolean().default(false)
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true }
+    },
+    withErrors(async (args) => {
+      const spec = await loadSchemaSpec(args);
+      const { errors, warnings } = checkSchemaSpec(spec);
+      if (errors.length > 0) {
+        throw new InputError(
+          `The spec has ${errors.length} error${errors.length === 1 ? "" : "s"}, so nothing ` +
+            `was built. Fix them and call validate_schema_spec again:\n${formatProblems(errors)}`
         );
-        if (exists) {
-          throw new InputError(
-            `${outputPath} already exists. Choose another path or set overwrite to true.`
-          );
-        }
       }
-      await writeFile(outputPath, `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
+      const outputPath = args.output_path
+        ? await prepareOutputPath(args.output_path, { overwrite: args.overwrite })
+        : null;
+
+      const { ocaPackage, said } = await buildPackageFromSpec(spec, { bundleService });
+
+      const readBackDifferences = diffReadBack(spec, ocaPackage);
+      if (readBackDifferences.length > 0) {
+        log(`read-back differs for ${said}: ${readBackDifferences.join(", ")}`);
+      }
+      const result = {
+        said,
+        summary: summarizePackage(ocaPackage),
+        warnings: [
+          ...warnings,
+          ...(readBackDifferences.length > 0
+            ? [
+                {
+                  path: "",
+                  message:
+                    "OCA Composer reads the built package back differently from the spec " +
+                    `(${readBackDifferences.join(", ")}). Compare it in OCA Composer before ` +
+                    "publishing, and report this as a bug."
+                }
+              ]
+            : [])
+        ]
+      };
+
+      if (!outputPath) {
+        return asJsonResult({ ...result, package: ocaPackage });
+      }
+      await writeJsonFile(outputPath, ocaPackage);
       return asJsonResult({ ...result, written_to: outputPath });
     })
   );
@@ -272,6 +390,27 @@ export function createServer() {
           uri: uri.href,
           mimeType: "text/markdown",
           text: VALIDATION_ERROR_CODES_MARKDOWN
+        }
+      ]
+    })
+  );
+
+  server.registerResource(
+    "schema-spec",
+    "oca://reference/schema-spec",
+    {
+      title: "Schema spec format",
+      description:
+        "How to write a schema spec for validate_schema_spec and build_oca_package, with the " +
+        "supported languages and classification codes.",
+      mimeType: "text/markdown"
+    },
+    async (uri) => ({
+      contents: [
+        {
+          uri: uri.href,
+          mimeType: "text/markdown",
+          text: SCHEMA_SPEC_REFERENCE_MARKDOWN
         }
       ]
     })

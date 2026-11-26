@@ -1,0 +1,326 @@
+{
+  "created": {
+    "791863b5964d74a15a7ad680918a7bab781427020c83140a71c332f86babf93e": {
+      "dsl": "# add attributes (capture base)\nADD ATTRIBUTE ruche=Text etat=Text\n# Add classification\n# Add meta overlay\nADD Meta fr PROPS name=\"Inventaire des ruches\" description=\"\"\n# Add Format Overlay\n# Add Conformance Overlay\nADD CONFORMANCE ATTRS ruche=M etat=O\n# Add Cardinality Overlay\n# Add label overlay\nADD Label fr ATTRS ruche=\"Ruche\" etat=\"État\"\n# Add information overlay\n# Add entry code overlay\nADD ENTRY_CODE ATTRS etat=[\"B\", \"M\"]\nADD ENTRY fr ATTRS etat={\"B\": \"Bon\", \"M\": \"Mauvais\"}\n\n# Add units overlay\n# Add character encoding overlay\n",
+      "status": 200,
+      "json": {
+        "success": true,
+        "said": "EHIWYa21Q2unoX8HmTDq5XRY8V9JAoHKG0dUUfKs2CHM"
+      }
+    },
+    "3e579668fa06fa7f7de2e7125ad313df960472f834d199edd36c7872fd8799c7": {
+      "dsl": "# add attributes (capture base)\nADD ATTRIBUTE bird_id=Text live_weight=Numeric hatch_date=DateTime treatment=Text visits=Array[Text] scores=Array[Numeric] tags=Array[Text] temperatures=Array[Numeric] pen.no=Numeric photo=Binary healthy=Boolean notes-free=Text\n# Add classification\nADD classification RDF401\n# Add meta overlay\nADD Meta en PROPS name=\"Poultry trial\" description=\"Broiler feeding trial, \\\"phase 2\\\"\"\nADD Meta fr PROPS name=\"Essai avicole\" description=\"Essai d'alimentation des poulets\"\n# Add Format Overlay\nADD Format ATTRS bird_id=\"^[A-Z]{2}[0-9]{3}$\" live_weight=\"^-?[0-9]+(\\.[0-9]+)?$\" hatch_date=\"^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$\" photo=\"image/png\"\n# Add Conformance Overlay\nADD CONFORMANCE ATTRS bird_id=M live_weight=M hatch_date=O treatment=M visits=O scores=O tags=O temperatures=O pen.no=O photo=O healthy=O notes-free=O\n# Add Cardinality Overlay\nADD CARDINALITY ATTRS visits=\"1-3\" scores=\"2-\" tags=\"-5\" temperatures=\"3\"\n# Add label overlay\nADD Label en ATTRS bird_id=\"Bird\" live_weight=\"Live weight\" hatch_date=\"Hatch date\" treatment=\"Treatment\" visits=\"Vet visits\" scores=\"Scores\" tags=\"Tags\" temperatures=\"Temperatures\" pen.no=\"Pen #\" photo=\"Photo\" healthy=\"Healthy?\" notes-free=\"Notes \\\"free text\\\", a=b; c\\\\d\"\nADD Label fr ATTRS bird_id=\"Oiseau\" live_weight=\"Poids vif\" hatch_date=\"Date d'éclosion\" treatment=\"Traitement\" visits=\"Visites vétérinaires\" scores=\"Notes\" tags=\"Étiquettes\" temperatures=\"Températures\" pen.no=\"Enclos n°\" photo=\"Photo\" healthy=\"En bonne santé ?\" notes-free=\"Remarques {libres} [texte]\"\n# Add information overlay\nADD Information en ATTRS bird_id=\"Leg band identifier\" live_weight=\"Weight at day 42\" notes-free=\"It's free-form: 50% of birds, 'quoted'\"\nADD Information fr ATTRS bird_id=\"Identifiant de la bague\"\n# Add entry code overlay\nADD ENTRY_CODE ATTRS treatment=[\"CTRL\", \"HIGH\"]\nADD ENTRY en ATTRS treatment={\"CTRL\": \"Control diet\", \"HIGH\": \"High-protein diet\"}\nADD ENTRY fr ATTRS treatment={\"CTRL\": \"Régime témoin\", \"HIGH\": \"Régime riche en protéines\"}\n\n# Add units overlay\nADD Unit ATTRS live_weight=\"g\" temperatures=\"Cel\"\n# Add character encoding overlay\nADD CHARACTER_ENCODING ATTRS bird_id=\"utf-8\" photo=\"base64\"\n",
+      "status": 200,
+      "json": {
+        "success": true,
+        "said": "ELD1E1o1jbDeA-s7dGAaqWP1-o3-HPHbxakaJovsP6ds"
+      }
+    }
+  },
+  "bundles": {
+    "EHIWYa21Q2unoX8HmTDq5XRY8V9JAoHKG0dUUfKs2CHM": {
+      "status": 200,
+      "json": {
+        "v": "OCAA11JSON0005b0_",
+        "bundle": {
+          "v": "OCAS11JSON000593_",
+          "d": "EHIWYa21Q2unoX8HmTDq5XRY8V9JAoHKG0dUUfKs2CHM",
+          "capture_base": {
+            "d": "EAQDM6qp56DWmY8VXaSYswQLc_j-J5ngqOhzk8mFQhWI",
+            "type": "spec/capture_base/1.1",
+            "attributes": {
+              "etat": "Text",
+              "ruche": "Text"
+            },
+            "classification": "",
+            "flagged_attributes": []
+          },
+          "overlays": {
+            "conformance": {
+              "d": "EPI5wmN7rrn1rFv7QkL7RbSu5fGetR43eC5Ow8CwRkZf",
+              "capture_base": "EAQDM6qp56DWmY8VXaSYswQLc_j-J5ngqOhzk8mFQhWI",
+              "type": "spec/overlays/conformance/1.1",
+              "attribute_conformance": {
+                "etat": "O",
+                "ruche": "M"
+              }
+            },
+            "entry": [
+              {
+                "d": "EJWQxGFTCFKex9qUqADCOK52UXV1E8Bzn9EXf6hnKbaX",
+                "capture_base": "EAQDM6qp56DWmY8VXaSYswQLc_j-J5ngqOhzk8mFQhWI",
+                "type": "spec/overlays/entry/1.1",
+                "language": "fra",
+                "attribute_entries": {
+                  "etat": {
+                    "B": "Bon",
+                    "M": "Mauvais"
+                  }
+                }
+              }
+            ],
+            "entry_code": {
+              "d": "EFjVhH1k8dHy3MzD6C_1XAv8fzoic-w7P4rv8YvmNLmU",
+              "capture_base": "EAQDM6qp56DWmY8VXaSYswQLc_j-J5ngqOhzk8mFQhWI",
+              "type": "spec/overlays/entry_code/1.1",
+              "attribute_entry_codes": {
+                "etat": [
+                  "B",
+                  "M"
+                ]
+              }
+            },
+            "label": [
+              {
+                "d": "ENHZEFMpas1IRQGkIBFSpaPfO24mmWseODb_WDrMfFwk",
+                "capture_base": "EAQDM6qp56DWmY8VXaSYswQLc_j-J5ngqOhzk8mFQhWI",
+                "type": "spec/overlays/label/1.1",
+                "language": "fra",
+                "attribute_categories": [],
+                "attribute_labels": {
+                  "etat": "État",
+                  "ruche": "Ruche"
+                },
+                "category_labels": {}
+              }
+            ],
+            "meta": [
+              {
+                "d": "EDsU5A2Xm9mrf0BJjfIbIAu9FtCG90mwibi34KXshM5P",
+                "capture_base": "EAQDM6qp56DWmY8VXaSYswQLc_j-J5ngqOhzk8mFQhWI",
+                "type": "spec/overlays/meta/1.1",
+                "language": "fra",
+                "description": "",
+                "name": "Inventaire des ruches"
+              }
+            ]
+          }
+        },
+        "dependencies": []
+      }
+    },
+    "ELD1E1o1jbDeA-s7dGAaqWP1-o3-HPHbxakaJovsP6ds": {
+      "status": 200,
+      "json": {
+        "v": "OCAA11JSON0012d1_",
+        "bundle": {
+          "v": "OCAS11JSON0012b4_",
+          "d": "ELD1E1o1jbDeA-s7dGAaqWP1-o3-HPHbxakaJovsP6ds",
+          "capture_base": {
+            "d": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+            "type": "spec/capture_base/1.1",
+            "attributes": {
+              "bird_id": "Text",
+              "hatch_date": "DateTime",
+              "healthy": "Boolean",
+              "live_weight": "Numeric",
+              "notes-free": "Text",
+              "pen.no": "Numeric",
+              "photo": "Binary",
+              "scores": [
+                "Numeric"
+              ],
+              "tags": [
+                "Text"
+              ],
+              "temperatures": [
+                "Numeric"
+              ],
+              "treatment": "Text",
+              "visits": [
+                "Text"
+              ]
+            },
+            "classification": "RDF401",
+            "flagged_attributes": []
+          },
+          "overlays": {
+            "cardinality": {
+              "d": "EDnRk28Fxf-kTg3Q22XLaAhDBU_cqrce1GiihLvs5pJs",
+              "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+              "type": "spec/overlays/cardinality/1.1",
+              "attribute_cardinality": {
+                "scores": "2-",
+                "tags": "-5",
+                "temperatures": "3",
+                "visits": "1-3"
+              }
+            },
+            "character_encoding": {
+              "d": "EJ_eo6KltnO5QjN_xsCQ7yg5yRBhU3dM0MnLQAsn0YJt",
+              "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+              "type": "spec/overlays/character_encoding/1.1",
+              "attribute_character_encoding": {
+                "bird_id": "utf-8",
+                "photo": "base64"
+              }
+            },
+            "conformance": {
+              "d": "EF9lXVSQIDvegQjn5yO5UJhiBdsxlDdj209lFRbN7_hV",
+              "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+              "type": "spec/overlays/conformance/1.1",
+              "attribute_conformance": {
+                "bird_id": "M",
+                "hatch_date": "O",
+                "healthy": "O",
+                "live_weight": "M",
+                "notes-free": "O",
+                "pen.no": "O",
+                "photo": "O",
+                "scores": "O",
+                "tags": "O",
+                "temperatures": "O",
+                "treatment": "M",
+                "visits": "O"
+              }
+            },
+            "entry": [
+              {
+                "d": "EALhuDz5NyYpEkL4eC-96Pd7rsdpLCH71KGjqcjsDORN",
+                "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+                "type": "spec/overlays/entry/1.1",
+                "language": "fra",
+                "attribute_entries": {
+                  "treatment": {
+                    "CTRL": "Régime témoin",
+                    "HIGH": "Régime riche en protéines"
+                  }
+                }
+              },
+              {
+                "d": "EJA-nwA3fcwXtQApOKXXwNKaykLIPQnQJivp7iHD0xXc",
+                "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+                "type": "spec/overlays/entry/1.1",
+                "language": "eng",
+                "attribute_entries": {
+                  "treatment": {
+                    "CTRL": "Control diet",
+                    "HIGH": "High-protein diet"
+                  }
+                }
+              }
+            ],
+            "entry_code": {
+              "d": "EFMS88FilxqlSp8UMu_5dydmLtbWUQlqMV2q4AqQf9q9",
+              "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+              "type": "spec/overlays/entry_code/1.1",
+              "attribute_entry_codes": {
+                "treatment": [
+                  "CTRL",
+                  "HIGH"
+                ]
+              }
+            },
+            "format": {
+              "d": "EP1u8HKs7kZOBSHgMaQklgyh37600Fomnno8PqJA2JUR",
+              "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+              "type": "spec/overlays/format/1.1",
+              "attribute_formats": {
+                "bird_id": "^[A-Z]{2}[0-9]{3}$",
+                "hatch_date": "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+                "live_weight": "^-?[0-9]+(\\.[0-9]+)?$",
+                "photo": "image/png"
+              }
+            },
+            "information": [
+              {
+                "d": "ECrp0lNs_DvThYLLB5Vgm2mgRO4DJHBJVUyWe4IZ_2Qi",
+                "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+                "type": "spec/overlays/information/1.1",
+                "language": "eng",
+                "attribute_information": {
+                  "bird_id": "Leg band identifier",
+                  "live_weight": "Weight at day 42",
+                  "notes-free": "It's free-form: 50% of birds, 'quoted'"
+                }
+              },
+              {
+                "d": "EELg28T5VQnpdbMhkIpmllY7Kivxs0v8tEyngo4iY0jh",
+                "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+                "type": "spec/overlays/information/1.1",
+                "language": "fra",
+                "attribute_information": {
+                  "bird_id": "Identifiant de la bague"
+                }
+              }
+            ],
+            "label": [
+              {
+                "d": "EDFjaQ9IITW5ajALZ_seUSD1tujGbScQLYQvknVppKuB",
+                "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+                "type": "spec/overlays/label/1.1",
+                "language": "fra",
+                "attribute_categories": [],
+                "attribute_labels": {
+                  "bird_id": "Oiseau",
+                  "hatch_date": "Date d'éclosion",
+                  "healthy": "En bonne santé ?",
+                  "live_weight": "Poids vif",
+                  "notes-free": "Remarques {libres} [texte]",
+                  "pen.no": "Enclos n°",
+                  "photo": "Photo",
+                  "scores": "Notes",
+                  "tags": "Étiquettes",
+                  "temperatures": "Températures",
+                  "treatment": "Traitement",
+                  "visits": "Visites vétérinaires"
+                },
+                "category_labels": {}
+              },
+              {
+                "d": "EDmwnC2KfR2KZ0me_Vb5YIuBlK7g_ep-Mf6k-uwVPwFC",
+                "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+                "type": "spec/overlays/label/1.1",
+                "language": "eng",
+                "attribute_categories": [],
+                "attribute_labels": {
+                  "bird_id": "Bird",
+                  "hatch_date": "Hatch date",
+                  "healthy": "Healthy?",
+                  "live_weight": "Live weight",
+                  "notes-free": "Notes \\\"free text\\\", a=b; c\\\\d",
+                  "pen.no": "Pen #",
+                  "photo": "Photo",
+                  "scores": "Scores",
+                  "tags": "Tags",
+                  "temperatures": "Temperatures",
+                  "treatment": "Treatment",
+                  "visits": "Vet visits"
+                },
+                "category_labels": {}
+              }
+            ],
+            "meta": [
+              {
+                "d": "EIqvnZQ7bw9-Q1B7EyTgZlFXqm8lfc8zl0PLii1vgxSb",
+                "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+                "type": "spec/overlays/meta/1.1",
+                "language": "eng",
+                "description": "Broiler feeding trial, \\\"phase 2\\\"",
+                "name": "Poultry trial"
+              },
+              {
+                "d": "ENDFEK4DC0I11zMbVmHF4nHqGnJbNyzYtEm2NXI79i9I",
+                "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+                "type": "spec/overlays/meta/1.1",
+                "language": "fra",
+                "description": "Essai d'alimentation des poulets",
+                "name": "Essai avicole"
+              }
+            ],
+            "unit": {
+              "d": "ELI3Ylwxj8o4p2lMk6Xuw4oK-4miPc-DJSn7qPAugyP2",
+              "capture_base": "EJ_CyHSMSXQY7wWxePzNiHw9wUK7yq0nCw-YgURYAxwA",
+              "type": "spec/overlays/unit/1.1",
+              "attribute_unit": {
+                "live_weight": "g",
+                "temperatures": "Cel"
+              }
+            }
+          }
+        },
+        "dependencies": []
+      }
+    }
+  }
+}

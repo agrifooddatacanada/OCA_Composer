@@ -15,8 +15,9 @@ const bundleOcaCore = {
   }
 };
 
+// lib modules are built as entry points too so tests can import them from dist.
 await build({
-  entryPoints: ["src/index.js", "src/server.js"],
+  entryPoints: ["src/index.js", "src/server.js", "src/lib/*.js"],
   outdir: "dist",
   bundle: true,
   platform: "node",

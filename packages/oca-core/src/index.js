@@ -35,3 +35,6 @@ export * from "./linkml/mapLinkMLToOCABundle";
 export * from "./export/overlayInputs";
 export * from "./export/schemaExport";
 export * from "./export/packageAssembly";
+export * from "./export/singleSchemaPackage";
+
+export * from "./bundleService/bundleClient";
