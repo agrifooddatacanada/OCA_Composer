@@ -39,6 +39,7 @@ import DataSeparator from "./Overlays/DataSeparator";
 import ExampleOverlay from "./Overlays/ExampleOverlay";
 import { Context } from "./App";
 import Header from "./Header/Header";
+import EmbeddedHelpButton from "./Header/EmbeddedHelpButton";
 import Footer from "./Footer/Footer";
 import { useMultiSchema } from "./schema/schemaContext";
 import ClickableStepperProgressIndicator from "./StepperProgressIndicator/ClickableStepperProgressIndicator";
@@ -127,12 +128,15 @@ const Home = ({ currentPage, setCurrentPage }) => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   // ContextHub embeds this wizard in an iframe (Write Schema, and Edit via EmbeddedEdit's
-  // hand-off). The branded header banner (logo + per-step instruction text) and the
+  // hand-off). The branded header banner (logo + partner logo + language select) and the
   // partner-logo footer are chrome ContextHub's own composer chrome already substitutes
-  // for — hide them so the limited iframe height goes to the wizard itself. The step
-  // progress indicator stays: unlike the banner text, it's the only way to jump directly to
-  // a step instead of reaching it one Back/Next click at a time. Back/Next themselves also
-  // stay regardless: each page renders its own, independent of this shared layout.
+  // for — hide them so the limited iframe height goes to the wizard itself.
+  // EmbeddedHelpButton stands in for the one part of that banner with no ContextHub
+  // equivalent — the current step's instructions and its help-page link — as a small
+  // on-demand icon instead of an always-visible bar. The step progress indicator stays:
+  // unlike the banner text, it's the only way to jump directly to a step instead of
+  // reaching it one Back/Next click at a time. Back/Next themselves also stay regardless:
+  // each page renders its own, independent of this shared layout.
   const isEmbedded = searchParams.get("iframe") === "true";
   const { setSummaryExportMode } = useContext(Context);
 
@@ -535,6 +539,7 @@ const Home = ({ currentPage, setCurrentPage }) => {
   return (
     <>
       {!isEmbedded && <Header currentPage={currentPage} />}
+      {isEmbedded && <EmbeddedHelpButton currentPage={currentPage} />}
 
       <Box sx={{ flex: 1 }}>
         {/* debug logs removed to prevent noisy renders */}
